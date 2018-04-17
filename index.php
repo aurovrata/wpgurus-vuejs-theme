@@ -18,8 +18,8 @@
   <!-- VueJs templates -->
   <?php
   /*load templates for vue components*/
-  get_template_part( 'templates/content', 'vjsmenu' );
-  get_template_part( 'templates/content', 'stdmenu' );
+  get_template_part( 'templates/content', 'primary-menu' );
+  get_template_part( 'templates/content', 'footer-menu' );
   get_template_part( 'templates/content', 'logo' );
   get_template_part( 'templates/content', 'page' );
 

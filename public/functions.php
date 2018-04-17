@@ -2,7 +2,8 @@
 /* hooks*/
 add_action( 'wp_enqueue_scripts', 'wpgurus_enqueue_styles' );
 //add_action( 'wp_head', 'martinhal_landing_site_head');
-//add_action( 'rest_api_init', 'add_page_body_class_to_rest_api_fields');
+//modify the rest menus to inlcude the vuejs custom checkbox.
+add_action( 'rest_menus_format_menu_item', 'add_menu_rest_fields');
 
 //includes: load initial page data, saves an extra request by the vueJS controller.
 require_once plugin_dir_path(__DIR__).'include/load-data.php';
@@ -21,20 +22,43 @@ function wpgurus_enqueue_styles() {
   wp_enqueue_script( WPGURUS_APP, $theme_folder . '/js/app.js', array('vue-router-js', 'jquery'), WPGURUS_V2_VERSION, true);
   wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', null,WPGURUS_V2_VERSION,'all');
 }
-
-function add_page_body_class_to_rest_api_fields(){
-      register_rest_field( 'page', 'bodyClass', array(
-          'get_callback' => function( $page_arr ) {
-              $page_obj = get_post( $page_arr['id'] );
-              $classes = get_body_class();
-              return join(' ', $classes);
-          },
-          'schema' => array(
-              'description' => __( 'Body classes.' ),
-              'type'        => 'string'
-          ),
-      ) );
+/**
+*
+*
+* @param array $rest_menu the menu being returned for the rest api.
+*/
+function add_menu_rest_fields($rest_menu_item){
+  if(empty($rest_menu_item) || !isset($rest_menu_item['id'])){
+    return $rest_menu_item;
   }
+  $item_id = $rest_menu_item['id'];
+  $vjs = get_post_meta( $item_id, '_menu_item_exit_vuejs_router', true);
+  if($vjs && 'exit'==$vjs){
+    $vjs = false;
+  }else{
+    $vjs = true;
+  }
+  $rest_menu_item['isvjslink'] = $vjs;
+  return $rest_menu_item;
+}
+// {
+//       register_rest_field( 'post', 'isvjslink', array(
+//           'get_callback' => function( $obj_arr ) {
+//             debug_msg($obj_arr);
+//               $vjs = get_post_meta( $obj_arr['id'], '_menu_item_exit_vuejs_router', true);
+//               if($vjs && 'exit'==$vjs){
+//                 $vjs = false;
+//               }else{
+//                 $vjs = true;
+//               }
+//               return $vjs;
+//           },
+//           'schema' => array(
+//               'description' => __( 'Show link response in VueJS router.' ),
+//               'type'        => 'boolean'
+//           ),
+//       ) );
+//   }
 
 function wpgurus_domain_url(){
   $home = network_site_url(); //in case wpmu.

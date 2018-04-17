@@ -6,82 +6,15 @@
      - SitePaths : some site url paths, used to distinguish between localhost and domain based isntallations.
   */
 
-  var currentPage = InitialPage;
   let isHomepage = InitialPage.data[0].homepage;
-
-  const exText = Vue.component('content-example',{
-    template: '#comp-example',
-    data: function(){
-      return {
-        text:'<!-- this is an example of inserting a vueJs component -->'
-      }
-    }
-  });
-  //menu.
-  const vjsMenu = function(type){
-    if('undefined' == typeof type) type = 'primary';
-    return Vue.component(type+'-menu',{
-      template: '#vue-menu',
-      data: function(){
-        return {
-          menu:InitialMenu[type]
-        }
-      },
-      methods:{
-        menuClass: function(){
-          return 'large-text-right';
-        },
-        relativeUrl: function(item){
-          return item.url.replace(SitePaths.root, '/');
-        },
-        linKey: function(item){
-          return item.object+'s/'+item.object_id;
-        }
-      }
-    }); //end Vue.component.
-  }
-  const stdMenu = function(type){
-    if('undefined' == typeof type) type = 'primary';
-    return Vue.component(type+'-menu',{
-      template: '#std-menu',
-      data: function(){
-        return {
-          menu:InitialMenu[type]
-        }
-      },
-      methods:{
-        menuClass: function(){
-          return 'large-text-right';
-        },
-        itemClass: function(item){
-          let classes = 'menu-item';
-          if(item.url === document.location){
-            classes += ' menu-selected';
-          }
-          return classes;
-        }
-      }
-    }); //end Vue.component.
-  }
-  const logo = Vue.component('logo-image',{
-    template:'#content-logo',
-    data: function(){
-      return {
-        src:SitePaths.logo,
-        link:SitePaths.home.replace(SitePaths.root,'/')
-      }
-    }
-  });
-  //const primaryMenu = vjsMenu('primary');
-  const footerMenu = vjsMenu('footer');
-  const primaryMenu = stdMenu('primary');
-
+  // main content component.
   const wpPage = {
     template: '#content-page',
     data: function(){
       return {
-        page: currentPage.data[0],
+        page: InitialPage.data[0],
         homepage: isHomepage,
+        status:''
       }
     },
     methods: {
@@ -109,37 +42,82 @@
           this.page = data.body[0];
           this.homepage = (path === SitePaths.home);
         }, (data) => {
-          currentPage = { error: "failed to load the page"};
+          this.status = { error: "failed to load the page"};
         });
         //end get.
       }
     }
   }
-  //}
-  //Vue.use(VueResource);
-  //Vue.use(VueRouter);
+
   const routes = [{
     path:SitePaths.home.replace(SitePaths.root,'/'),
     component: wpPage
   }];
-  //setup primary menu routes.
-  if(InitialMenu.enabled && InitialMenu.primary.length > 0){
-    for(let idx = 0; idx< InitialMenu.primary.length; idx++){
-      routes[routes.length] = {
-        path: InitialMenu.primary[idx].url.replace(SitePaths.root, '/'),
-        component: wpPage
-      };
+  //setup menu routes.
+  const getRoutes = function(menu){
+    if(InitialMenu.enabled && InitialMenu[menu].items.length > 0){
+      for(let idx = 0; idx< InitialMenu[menu].items.length; idx++){
+        if('undefined' !== typeof InitialMenu[menu].items[idx].isvjslink && InitialMenu[menu].items[idx].isvjslink){
+          routes[routes.length] = {
+            path: InitialMenu[menu].items[idx].url.replace(SitePaths.root, '/'),
+            component: wpPage
+          };
+        }
+      }
     }
   }
-  if(InitialMenu.enabled && InitialMenu.footer.length > 0){
-    for(let idx = 0; idx< InitialMenu.footer.length; idx++){
-      routes[routes.length] = {
-        path: InitialMenu.footer[idx].url.replace(SitePaths.root, '/'),
-        component: wpPage
-      };
+  //menu.
+  const vjsMenu = function(type){
+    if('undefined' == typeof type) type = 'primary';
+    if('undefined' == typeof InitialMenu[type]){
+      return null;
     }
+    getRoutes(type); //load the menu links in the router.
+    return Vue.component(type+'-menu',{
+      template: '#'+type+'-menu',
+      data: function(){
+        return {
+          menu:InitialMenu[type]
+        }
+      },
+      methods:{
+        menuClass: function(){
+          return 'large-text-right';
+        },
+        relativeUrl: function(item){
+          return item.url.replace(SitePaths.root, '/');
+        },
+        linKey: function(item){
+          return item.object+'s/'+item.object_id;
+        },
+        itemClass: function(item){
+          let classes = 'menu-item';
+          if(item.url === document.location){
+            classes += ' menu-selected';
+          }
+          return classes;
+        }
+      }
+    }); //end Vue.component.
   }
-  //console.log(routes);
+
+  const logo = Vue.component('logo-image',{
+    template:'#content-logo',
+    data: function(){
+      return {
+        src:SitePaths.logo,
+        link:SitePaths.home.replace(SitePaths.root,'/')
+      }
+    }
+  });
+
+
+  //setup menu components and routes.
+  const footerMenu = vjsMenu('footer');
+  const primaryMenu = vjsMenu('primary');
+  const networkMenu = vjsMenu('network');
+
+  console.log(routes);
   const router  = new VueRouter({
     routes: routes,
     mode:'history'

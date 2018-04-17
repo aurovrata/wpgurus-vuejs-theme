@@ -38,10 +38,10 @@ class Initial_LoadMenu {
 	 * Dumps the current query response as a JSON-encoded string
 	 */
 	public function add_json_data() {
-    $menus = apply_filters('wpgurus_theme_vuejs_menu', array('primary', 'footer'));
+    $menus = apply_filters('wpgurus_theme_vuejs_menu', get_nav_menu_locations());
     $data = array('enabled' => class_exists( 'WP_REST_Menus' ));
-    foreach($menus as $menu){
-      $data[$menu] = $this->get_menu_data($menu);
+    foreach($menus as $location=>$menu_id){
+      $data[$location] = $this->get_menu_data($menu_id);
     }
 		return wp_json_encode( $data );
 	}
@@ -51,18 +51,18 @@ class Initial_LoadMenu {
 	 *
 	 * @return array
 	 */
-	public function get_menu_data($location) {
+	public function get_menu_data($menu_id) {
 		$menu = array();
 
 		$request = new \WP_REST_Request();
 		$request['context'] = 'view';
-		$request['location'] = $location;
+		$request->set_url_params(array('id'=> $menu_id));
+		//$request['location'] = $location;
 
 		if ( class_exists( 'WP_REST_Menus' ) ) {
 			$menu_api = new WP_REST_Menus();
-			$menu = $menu_api->get_menu_location( $request );
+			$menu = $menu_api->get_menu( $request );
 		}
-
 		return $menu;
 	}
 }
