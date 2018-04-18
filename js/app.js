@@ -7,6 +7,8 @@
   */
 
   let isHomepage = InitialPage.data[0].homepage;
+  //strip trailing slash.
+  const initialLink = InitialPage.data[0].link.replace(/\/$/, "");
   // main content component.
   const wpPage = {
     template: '#content-page',
@@ -14,7 +16,7 @@
       return {
         page: InitialPage.data[0],
         homepage: isHomepage,
-        status:''
+        status:'',
       }
     },
     methods: {
@@ -25,7 +27,9 @@
     created: function(){
       this.page = {title:{rendered:''},content:{rendered:''}};
       let path = SitePaths.root + this.$route.path.substr(1);
-      if(InitialPage && InitialPage.data.length>0 && path === InitialPage.data[0].link){
+      //strip trailing slash.
+      path = path.replace(/\/$/, "");
+      if(InitialPage && InitialPage.data.length>0 && path === initialLink){
         this.page = InitialPage.data[0];
         this.homepage = isHomepage;
       }else{
@@ -81,7 +85,7 @@
         }
       },
       methods:{
-        menuClass: function(){
+        menuClass: function(classes=''){
           return 'large-text-right';
         },
         relativeUrl: function(item){

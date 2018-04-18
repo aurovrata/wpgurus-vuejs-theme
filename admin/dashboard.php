@@ -15,11 +15,14 @@ add_filter( 'manage_nav-menus_columns', 'menu_router_nav_menu_manage_columns' , 
 add_action( 'save_post_nav_menu_item','menu_router_save_post_action' , 10, 2 );
 /*functions*/
 function setup_wpgurus_theme(){
-  // This theme uses wp_nav_menu() in one location.
-	register_nav_menus( array(
-		'primary' => esc_html__( 'Primary Menu', 'martinhal2' ),
-    'footer' => esc_html__( 'Footer Menu', 'martinhal2' )
-	) );
+  $menus =  array(
+		'primary' => esc_html__( 'Primary Menu', 'wpgurus-vuejs' ),
+    'footer' => esc_html__( 'Footer Menu', 'wpgurus-vuejs' )
+	);
+  if(is_multisite()){
+    $menus['network'] = esc_html__( 'Network Menu', 'wpgurus-vuejs' );
+  }
+	register_nav_menus($menus);
 }
 /**
  * Enables the page templates.

@@ -2,7 +2,7 @@
 //menu template.
  ?>
  <template id="network-menu">
-   <nav>
+   <nav class="network-menu">
      <ul v-bind:class="menuClass()">
        <li v-for="item in menu.items" v-bind:class="itemClass(item)">
          <a v-if="!item.isvjslink" v-html="item.title" v-bind:href="item.url"></a>

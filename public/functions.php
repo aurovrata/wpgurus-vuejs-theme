@@ -41,24 +41,6 @@ function add_menu_rest_fields($rest_menu_item){
   $rest_menu_item['isvjslink'] = $vjs;
   return $rest_menu_item;
 }
-// {
-//       register_rest_field( 'post', 'isvjslink', array(
-//           'get_callback' => function( $obj_arr ) {
-//             debug_msg($obj_arr);
-//               $vjs = get_post_meta( $obj_arr['id'], '_menu_item_exit_vuejs_router', true);
-//               if($vjs && 'exit'==$vjs){
-//                 $vjs = false;
-//               }else{
-//                 $vjs = true;
-//               }
-//               return $vjs;
-//           },
-//           'schema' => array(
-//               'description' => __( 'Show link response in VueJS router.' ),
-//               'type'        => 'boolean'
-//           ),
-//       ) );
-//   }
 
 function wpgurus_domain_url(){
   $home = network_site_url(); //in case wpmu.

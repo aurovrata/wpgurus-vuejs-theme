@@ -2,11 +2,11 @@
 //menu template.
  ?>
  <template id="primary-menu">
-   <nav>
+   <nav class="primary-menu">
      <ul v-bind:class="menuClass()">
        <li v-for="item in menu.items" v-bind:class="itemClass(item)">
          <a v-if="!item.isvjslink" v-html="item.title" v-bind:href="item.url"></a>
-         <router-link v-if="item.isvjslink" v-bind:key="linKey(item)" v-bind:to="relativeUrl(item)" v-html="item.title" exact></router-link>
+         <router-link v-if="item.isvjslink" v-bind:key="linKey(item)" v-bind:to="relativeUrl(item)" v-html="item.title"  exact></router-link>
       </li>
      </ul>
    </nav>

@@ -29,9 +29,9 @@ class Initial_LoadMenu {
 	}
   function add_json_paths(){
     return wp_json_encode( array(
-      'home' => network_site_url(),
+      'home' => home_url(),
 			'root' => wpgurus_domain_url(), //public/functions.php
-      'logo' => apply_filters('wpgurus_theme_logo', get_stylesheet_directory_uri().'/images/icons.svg#logo'),
+      'logo' => apply_filters('wpgurus_theme_logo', get_stylesheet_directory_uri().'/images/icons.svg'), //TODO: make dynamic.
 		) );
   }
 	/**
