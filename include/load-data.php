@@ -45,11 +45,19 @@ class Initial_LoadData {
 	public function add_json_rest_path(){
 		$root = home_url('/wp-json/wp/v2/');
 		$pid  = (int) \get_option( 'page_on_front' );
-
+		$page_id = get_option('page_on_front');
+	  if ( $page_id > 0 ) {
+	    // Set url for call to retrieve the post, need WP REST API for this
+	    $frontpage = network_site_url( '/index.php/wp-json/wp/v2/pages/' . $page_id);
+		}else{
+			$frontpage = network_site_url( '/index.php/wp-json/wp/v2/posts/');
+		}
 		return \wp_json_encode(array(
 			'root'=> $root,
 			'home' => $root.'pages/'.$pid,
-			'menu' => home_url('/wp-json/wp-api-menus/v2/menus/')
+			'menu' => home_url('/wp-json/wp-api-menus/v2/menus/'),
+      'languages'=>apply_filters('wpgurus_theme_language_rest',home_url()),
+			'frontpage'=>$frontpage
 		));
 	}
 
@@ -60,7 +68,8 @@ class Initial_LoadData {
     $data = wp_json_encode( array(
 			'data' => $this->get_post_data(),
 			'paging' => $this->get_total_pages(),
-      'homepage' => is_front_page()
+      'homepage' => is_front_page(),
+      'lang' => apply_filters('wpgurus_theme_current_language',get_locale())
 		) );
     return $data;
 	}
@@ -76,7 +85,6 @@ class Initial_LoadData {
 		}
 
 		$posts = $GLOBALS['wp_query']->posts;
-
 		$rest_server        = rest_get_server();
 		$data               = array();
 		$request            = new \WP_REST_Request();

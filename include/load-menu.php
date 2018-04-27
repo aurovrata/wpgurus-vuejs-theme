@@ -28,11 +28,16 @@ class Initial_LoadMenu {
 		wp_add_inline_script( WPGURUS_APP, $menu_data, 'before' );
 	}
   function add_json_paths(){
-    return wp_json_encode( array(
-      'home' => home_url(),
+		$paths = array(
+      'home' => apply_filters('wpgurus_theme_home_url',home_url()),
 			'root' => wpgurus_domain_url(), //public/functions.php
       'logo' => apply_filters('wpgurus_theme_logo', get_stylesheet_directory_uri().'/images/icons.svg'), //TODO: make dynamic.
-		) );
+		);
+		$others = apply_filters('wpgurus_themes_add_sitepaths', array());
+		foreach($others as $key=>$path){
+			$paths[$key] = $path;
+		}
+    return wp_json_encode( $paths );
   }
 	/**
 	 * Dumps the current query response as a JSON-encoded string
@@ -41,8 +46,17 @@ class Initial_LoadMenu {
     $menus = apply_filters('wpgurus_theme_vuejs_menu', get_nav_menu_locations());
     $data = array('enabled' => class_exists( 'WP_REST_Menus' ));
     foreach($menus as $location=>$menu_id){
-      $data[$location] = $this->get_menu_data($menu_id);
+			$menu_data = $this->get_menu_data($menu_id);
+			if(!empty($menu_data)){
+	      $data[$location] = $menu_data;
+			}
     }
+		if(apply_filters('wpgurus_theme_multilingual', false)){
+			$languages = apply_filters('wpgurus_theme_language_menu', array());
+      if(!empty($languages)){
+        $data['languages']=$languages;
+      }
+		}
 		return wp_json_encode( $data );
 	}
 

@@ -25,3 +25,40 @@ nav a {
  main{
      min-height: calc(100vh - 230px);
  }
+ .navigation-languages {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    right: 20px;
+}
+.navigation-languages .current-lang {
+    display: block;
+    text-align: center;
+    padding: 2px 0;
+}
+.language-menu {
+  /* display: none; */
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s, opacity 0.5s linear;
+}
+.navigation-languages:hover .language-menu {
+  /* display: block; */
+  visibility: visible;
+  opacity: 1;
+}
+.language-menu li {
+    display: block;
+    padding-left:0;
+}
+.current-lang .title {
+    margin-right: 7px;
+}
+.current-lang .raquo {
+    transform: rotate(90deg);
+    display: inline-block;
+    transition: all 0.5s ease;
+}
+.navigation-languages:hover .current-lang .raquo {
+    transform: rotate(-90deg);
+}
