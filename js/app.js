@@ -98,7 +98,7 @@ const getRoutes = function(menu, vuec){
 const allMenu = {
   primary: initMenu('primary'),
   footer: initMenu('footer'),
-  //network: initMenu('network'),
+  network: initMenu('network'),
   languages:initMenu('languages')
 };
 const mainSection = Vue.component('main-section',{
@@ -106,7 +106,7 @@ const mainSection = Vue.component('main-section',{
   components:{
     'primary-menu': vjsMenu('primary'),
     'footer-menu': vjsMenu('footer'),
-    //'network-menu': vjsMenu('network'),
+    'network-menu': vjsMenu('network'),
     'language-menu': vjsLang(),
     'logo-image': logo,
     'content-page': wpPage

@@ -7,7 +7,7 @@
        <li v-for="item in menu.items" v-bind:class="itemClass(item)" v-on:click="queueId(item)">
          <a v-if="!item.isvjslink" v-html="item.title" v-bind:href="item.url"></a>
          <router-link v-if="item.isvjslink" v-bind:key="linKey(item)" v-html="item.title" v-bind:to="relativeUrl(item)"  exact></router-link>
-      </li>
+       </li>
      </ul>
    </nav>
  </template>
