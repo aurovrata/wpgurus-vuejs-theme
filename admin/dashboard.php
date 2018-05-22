@@ -23,6 +23,8 @@ function setup_wpgurus_theme(){
     $menus['network'] = esc_html__( 'Network Menu', 'wpgurus-vuejs' );
   }
 	register_nav_menus($menus);
+  //add featured image support.
+  add_theme_support( 'post-thumbnails' ); 
 }
 /**
  * Enables the page templates.

@@ -33,15 +33,44 @@ class Initial_LoadData {
 	 */
 	public function print_data() {
 		$data = sprintf(
-			'var InitialPage = %s;'.PHP_EOL.'const WPrestPath = %s;',
+			'var InitialPage = %s;'.PHP_EOL.'const WPrestPath = %s;'.PHP_EOL.'const VueCustomRoutes = %s;',
 			$this->add_json_data(),
-      $this->add_json_rest_path()
+      $this->add_json_rest_path(),
+      $this->add_json_routes()
 		);
 		$result = wp_add_inline_script( WPGURUS_APP, $data, 'before' );
 
 
 	}
-
+  public function add_json_routes(){
+    $data = array();
+    $post_types = array();
+    $post_types = apply_filters('wpgurus_theme_custom_post_routes', $post_types);
+    $root = wpgurus_domain_url();
+		if(!empty($post_types)){
+			if(array_keys($post_types) === range(0, count($post_types) - 1)){
+				$assoc = array();
+				foreach($post_types as $type){
+					$assoc[$type] = $type;
+				}
+				$post_types = $assoc;
+			}
+	    foreach($post_types as $type=>$component){
+	      $archive = get_post_type_archive_link($post_types);
+	      $archive = str_replace($root,'/',$archive);
+				$data[]=array(
+					'path'=>$archive,
+					'component'=>$component
+				);
+				$data[]=array(
+					'path'=>$archive.':postName',
+					'component'=>$component,
+					'name'=>'postName'
+				);
+	    }
+    	return \wp_json_encode(array('routes'=>$data));
+		}else return '';
+  }
 	public function add_json_rest_path(){
 		$root = home_url('/wp-json/wp/v2/');
 		$pid  = (int) \get_option( 'page_on_front' );
