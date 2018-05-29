@@ -11,6 +11,8 @@ if(defined("POLYLANG_VERSION")){ //filter the home url for translated pages.
   add_action( 'rest_api_init', 'register_polylang_route'  );
   add_filter('wpgurus_theme_current_language', 'set_current_language');
   add_filter('wpgurus_theme_language_rest', 'set_polylang_rest_path');
+  add_action( 'rest_api_init', 'add_language_menu_to_api' );
+  add_filter('rest_pre_echo_response', 'remove_archive_language_menus');
 }
 
 //includes: load initial page data, saves an extra request by the vueJS controller.
@@ -28,7 +30,7 @@ function wpgurus_enqueue_styles() {
   wp_enqueue_script( 'vue-router-js', $theme_folder . '/js/vue/vue-router.js', array('vue-js'), '3.0.1', true);
   wp_enqueue_script('jquery');
 
-  wp_enqueue_script( WPGURUS_APP, $theme_folder . '/js/app.js', array('vue-router-js', 'jquery'), WPGURUS_V2_VERSION, true);
+  wp_enqueue_script( WPGURUS_APP, $theme_folder . '/js/app.js', array('vue-router-js', 'wp-api'), WPGURUS_V2_VERSION, true);
   wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', null,WPGURUS_V2_VERSION,'all');
 }
 //function to include vuejs templates.
@@ -89,15 +91,23 @@ function filter_polylang_home_url($url){
 */
 function polylang_post_menu($request){
   $params     = $request->get_params();
-  return polylang_language_menu(array(), $params['id']);
+  return polylang_language_menu(array(), $params);
 }
-function polylang_language_menu($menu=array(), $page_id=0){
-  $args = array('raw'=>1);
-  if($page_id>0){
-    $args['post_id']=$page_id;
+function polylang_language_menu($menu=array(), $args=array()){
+  $pll_args = array('raw'=>1);
+  if(isset($args['id'])){
+    $pll_args['post_id']=$args['id'];
+  }else if(isset($args['slug'])){
+    $pll_args['force_home']=1;
   }
   if(function_exists('pll_the_languages')){
-    $menu = pll_the_languages($args);
+    $menu = pll_the_languages($pll_args);
+  }
+  if(isset($args['slug'])){
+    foreach($menu as $lang=>&$item){
+      $slug = pll_translate_string($args['slug'],$lang);
+      $item['url'].=$slug;
+    }
   }
   return $menu;
 }
@@ -122,6 +132,17 @@ function register_polylang_route(){
           ),
       )
   ));
+  register_rest_route( 'wpgurus/v2', '/polylang/(?P<slug>[a-zA-Z0-9_-]+)', array(
+      array(
+          'methods'  => WP_REST_Server::READABLE,
+          'callback' => 'polylang_post_menu' ,
+          'args'     => array(
+              'context' => array(
+              'default' => 'view',
+              ),
+          ),
+      )
+  ));
 }
 /**
 *
@@ -135,4 +156,28 @@ function set_current_language($lang){
 }
 function set_polylang_rest_path($path){
   return home_url('/wp-json/wpgurus/v2/polylang/');
+}
+
+/**
+* Adds language menu to each post/page request.
+* TODO: this is only called with polylang, hence need to get all translated posts.
+*/
+function add_language_menu_to_api($request) {
+  //debug_msg($GLOBALS['wp']->query_vars['rest_route']);
+  // register_rest_field ( 'name-of-post-type', 'name-of-field-to-return', array-of-callbacks-and-schema() )
+  register_rest_field( array('post','page'), 'language_menu', array(
+      'get_callback'    => function($object){
+       return polylang_language_menu(array(), $object['id']);
+      },
+      'schema'          => null,
+    )
+  );
+}
+function remove_archive_language_menus($results){
+  if(is_array($results) && count($results)>1){
+    foreach($results as &$post){
+      if(isset($post['language_menu'])) unset($post['language_menu']);
+    }
+  }
+  return $results;
 }

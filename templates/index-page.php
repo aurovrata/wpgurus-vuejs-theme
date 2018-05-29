@@ -2,8 +2,8 @@
 //vue js templates
 ?>
 <template id="content-page">
-    <main v-bind:id="articleId()">
-      <h1 v-if="homepage" v-thml="page.title.rendered"></h1>
-      <div v-html="page.content.rendered"></div>
-    </main>
+  <section class="bg-white mt-px10 pb-px200">
+    <slot v-if="type==='page'" name="page"></slot>
+    <slot v-else name="default"></slot>
+  </section>
 </template>

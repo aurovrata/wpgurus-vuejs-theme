@@ -13,7 +13,21 @@ get_header();
         <language-menu v-if="hasMenu('languages')" v-bind:current="this.lang" v-bind:languages="this.menus.languages"></language-menu>
         <primary-menu  v-if="hasMenu('primary')" v-bind:menu="this.menus.primary"></primary-menu>
       </header>
-      <content-page v-bind:page="this.page" v-bind:home="this.homepage"></content-page>
+      <content-page v-bind:type="this.posts[0].type" v-bind:count="this.posts.length">
+        <!-- page -->
+        <template slot="page">
+          <main v-bind:id="articleId(this.posts[0])">
+            <h1 v-if="homepage" v-thml="posts[0].title.rendered"></h1>
+            <div v-html="posts[0].content.rendered"></div>
+          </main>
+        </template>
+        <!-- posts -->
+        <template slot="default">
+          <article v-for="{post in this.posts}" v-bind:id="articleId(post)">
+            <h1 v-thml="post.title.rendered"></h1>
+            <div v-html="post.content.rendered"></div>
+          </article>
+        </template>
       <footer>
         <footer-menu  v-if="hasMenu('footer')" v-bind:menu="this.menus.footer"></footer-menu>
       </footer>

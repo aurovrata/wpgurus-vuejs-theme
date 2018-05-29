@@ -28,10 +28,12 @@ class Initial_LoadMenu {
 		wp_add_inline_script( WPGURUS_APP, $menu_data, 'before' );
 	}
   function add_json_paths(){
+		$domain_url = wpgurus_domain_url();
 		$paths = array(
       'home' => apply_filters('wpgurus_theme_home_url',home_url()),
-			'root' => wpgurus_domain_url(), //public/functions.php
+			'root' => $domain_url, //public/functions.php
       'logo' => apply_filters('wpgurus_theme_logo', get_stylesheet_directory_uri().'/images/icons.svg'), //TODO: make dynamic.
+      'currentRoute'=> wp_unslash($_SERVER['REQUEST_URI'])
 		);
 		$others = apply_filters('wpgurus_themes_add_sitepaths', array());
 		foreach($others as $key=>$path){
