@@ -16,7 +16,20 @@ class Initial_LoadData {
 	public function __construct() {
 		add_action( 'pre_get_posts', array( $this, 'unstick_stickies' ) );
 		add_filter( 'wp_enqueue_scripts', array( $this, 'print_data' ) );
+    //add_filter( 'posts_request', array($this, 'bail_main_wp_query'), 10, 2 );
 	}
+  public function bail_main_wp_query( $sql, $wpQuery ) {
+    if ( $wpQuery->is_main_query() ) {
+        /* prevent SELECT FOUND_ROWS() query*/
+        $wpQuery->query_vars['no_found_rows'] = true;
+
+        /* prevent post term and meta cache update queries */
+        $wpQuery->query_vars['cache_results'] = false;
+
+        return false;
+    }
+    return $sql;
+}
 
 	/**
 	 * Unstick sticky posts to mirror the behavior of the REST API
@@ -26,7 +39,7 @@ class Initial_LoadData {
 	public function unstick_stickies( $query ) {
 		if(is_admin()) return;
 		$query->set( 'ignore_sticky_posts', true );
-		$query->set( 'posts_per_page', 10 );
+		$query->set( 'posts_per_page', 10 ); //limit return for now.
 	}
 
 	/**
@@ -70,7 +83,8 @@ class Initial_LoadData {
   }
 	public function add_json_rest_path(){
 		$root = rest_url('/wp/v2/');
-		$pid  = (int) \get_option( 'page_on_front' );
+		// $pid  = (int) \get_option( 'page_on_front' );
+		$frontpage='';
 		$page_id = get_option('page_on_front');
 	  if ( $page_id > 0 ) {
 	    // Set url for call to retrieve the post, need WP REST API for this
@@ -78,13 +92,26 @@ class Initial_LoadData {
 		}else{
 			$frontpage = rest_url( '/wp/v2/posts/');
 		}
+		$current = '';
+		if( is_front_page() ) $current = $frontpage;
+		else{
+			$post_type = '';
+			if( !empty($GLOBALS['wp_query']->posts)){
+				$post_type = $GLOBALS['wp_query']->posts[0]->post_type;
+			}
+			$obj = get_post_type_object($post_type);
+			$rest = empty($obj->rest_base) ? $post_type : $obj->rest_base;
+
+			if(is_single() || is_page()) $rest = $rest.'/'.$GLOBALS['wp_query']->posts[0]->ID;
+			$current = rest_url('/wp/v2/'.$rest);
+		}
+		//debug_msg($obj, $post_type);
 		return \wp_json_encode(array(
 			'root'=> $root,
-			'home' => $root.'pages/'.$pid,
 			'menu' => rest_url('/wp-api-menus/v2/menus/'),
       'languages'=>apply_filters('wpgurus_theme_language_rest',home_url()),
 			'frontpage'=>$frontpage,
-
+			'current'=>$current
 		));
 	}
 
@@ -92,10 +119,21 @@ class Initial_LoadData {
 	 * Dumps the current query response as a JSON-encoded string
 	 */
 	public function add_json_data() {
+		$post_type = '';
+		if( !empty($GLOBALS['wp_query']->posts)){
+			$post_type = $GLOBALS['wp_query']->posts[0]->post_type;
+		}
+    //check what kind of homepage ths site has.
+    $page_id = get_option('page_on_front');
+    if($page_id>0) $home=array('type'=>'post_type', 'object'=>'page');
+    else $home=array('type'=>'post_type_archive', 'object'=>'post');
     $data =  array(
-			'posts' => $this->get_post_data(),
+			'single' => is_single(),
+			'archive'=> is_archive(),
+			'type'=> $post_type ,
 			'paging' => $this->get_total_pages(),
       'homepage' => is_front_page(),
+      'homelink' => $home,
       'lang' => apply_filters('wpgurus_theme_current_language',get_locale())
 		) ;
 		global $wp;
@@ -120,8 +158,8 @@ class Initial_LoadData {
 		// }
 
 		$posts = $GLOBALS['wp_query']->posts;
-    //debug_msg($GLOBALS['wp_query']);
-    // debug_msg($posts);
+    //debug_msg($GLOBALS['wp_query']->queried_object);
+    // debug_msg($posts, 'posts');
 		$rest_server        = rest_get_server();
 		$data               = array();
 		$request            = new \WP_REST_Request();

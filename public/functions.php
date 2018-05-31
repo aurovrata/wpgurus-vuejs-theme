@@ -1,6 +1,7 @@
 <?php
 /* hooks*/
 add_action( 'wp_enqueue_scripts', 'wpgurus_enqueue_styles' );
+add_filter( 'body_class', 'wpgurus_clear_body_class',0,1);
 //add_action( 'wp_head', 'martinhal_landing_site_head');
 //modify the rest menus to inlcude the vuejs custom checkbox.
 add_action( 'rest_menus_format_menu_item', 'add_menu_rest_fields');
@@ -23,6 +24,9 @@ require_once plugin_dir_path(__DIR__).'include/load-menu.php';
 new Initial_LoadMenu();
 
 /*function */
+function wpgurus_clear_body_class( $classes ) {
+  return array();
+}
 function wpgurus_enqueue_styles() {
   $theme_folder = get_template_directory_uri();
   wp_enqueue_script( 'vue-js', $theme_folder . '/js/vue/vue.js', null, '2.5.16', true);

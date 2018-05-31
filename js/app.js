@@ -7,10 +7,15 @@
 */
 
 let isHomepage = InitialPage.homepage;
-let restRequest = WPrestPath.root; //track the rest requst path when a menu is clicked.
+let restRequest = WPrestPath.current; //track the rest requst path when a menu is clicked.
+let postType = InitialPage.type;
+let isArchive = InitialPage.archive;
+let isSingle = InitialPage.single;
+let isTaxonomy = false;
 //strip trailing slash.
 const initialLink = SitePaths.root.replace(/\/$/, "") + SitePaths.currentRoute;//.replace(/\/$/, "");
 console.log('initialLink:'+initialLink);
+console.log('initialRest:'+restRequest);
 //declare an event bus (https://alligator.io/vuejs/global-event-bus/).
 const eventQ = new Vue();
 // main content component.
@@ -39,7 +44,23 @@ const vjsMenu = function(type){
     methods:{
       restRequest: function(item){
         if(item.isvjslink){
+          console.log('rest request: '+item._links.self);
           restRequest=item._links.self;
+          postType = item.object;
+          isTaxonomy=false;
+          isSingle = false;
+          isArchive = false;
+          switch(item.type){
+            case 'post_type':
+              isSingle = true;
+              break;
+            case 'post_type_archive':
+              isArchive = true;
+              break;
+            case 'taxonomy':
+              isTaxonomy=true;
+              break;
+          }
         }
       },
       relativeUrl: function(item){
@@ -75,105 +96,120 @@ const vjsLang = function(){
     props:['languages', 'current']
   } //end component.
 }
-const logo = {
-  template:'#main-logo',
-  props:['logo'],
-  methods:{
-    restRequest: function(path){
-      if(path.length>0){
-        restRequest=path;
-      }
-    }
-  }
-}
 
 //setup menu components and routes.
 const routes = [];//VueCustomRoutes.routes;
 
-//const allMenu = ;
-
-let postType = '';
-let postCount = 0;
-if(InitialPage.posts.length > 0 && 'undefined' !== typeof InitialPage.posts[0].type){
-  postType = InitialPage.posts[0].type;
-  postCount = InitialPage.posts.length;
-}else console.log('wpGurus: WARNING, type is undefined in the initial page');
-
-const componentData = InitialPage;
-componentData['status'] = '';
-componentData['menus'] = {
-  primary: initMenu('primary'),
-  footer: initMenu('footer'),
-  network: initMenu('network'),
-  languages:initMenu('languages')
-};
-componentData ['permalink']= initialLink;
-componentData['logo']= {
-  src:SitePaths.logo,
-  link:rootPath,
-  _links:{self:WPrestPath.homepage}
-};
-componentData['rest'] = restRequest;
-componentData['type'] = postType;
-componentData['count'] = postCount;
-//
-// //additional data.
-// if('undefined' != typeof VueCustomRoutes[SitePaths.currentRoute]){
-//   for(let key in VueCustomRoutes[SitePaths.currentRoute]){
-//     componentData[key] = [];
-//     if('undefined' != typeof InitialPage[key]){
-//       componentData[key] =  InitialPage[key];
-//     }
-//   }
-// }
-
-const pageComponent = function(){
-  const defComponents = {
-    'primary-menu': vjsMenu('primary'),
-    'footer-menu': vjsMenu('footer'),
-    'network-menu': vjsMenu('network'),
-    'language-menu': vjsLang(),
-    'logo-image': logo,
-    'content-page':{
-      template:'#content-page',
+const componentData = {
+  'status':'',
+  'menus':{
+    'primary': initMenu('primary'),
+    'footer': initMenu('footer'),
+    'network': initMenu('network'),
+    'languages':initMenu('languages')
+  },
+  'permalink':initialLink,
+  'logo':{
+    'src':SitePaths.logo,
+    'link':rootPath,
+    '_links':{'self':WPrestPath.frontpage},
+    'object':InitialPage.homelink.object,
+    'type':InitialPage.homelink.type
+  },
+  'posts':[],
+  'homepage':false,
+  'rest':restRequest,
+  'type':postType,
+  'single':isSingle,
+  'archive':isArchive,
+  'istax':isTaxonomy,
+  'custom':{}
+}
+const compLogo = {
+  template:'#logo-image',
+  props:['logo'],
+  methods:{
+    restRequest: function(item){
+      postType = item.object;
+      isSingle = false;
+      isArchive = false;
+      isTaxonomy = false;
+      switch(item.type){
+        case 'post_type':
+          isSingle = true;
+          break;
+        case 'post_type_archive':
+          isArchive = true;
+          break;
+      }
+      restRequest=item._links.self;
+      console.log('logo request:'+item._links.self);
     }
   }
-
-  /*
-  props:['type','count'],
-  computed:{isPage: function(){console.log('isPage: '+this.type);return 'page'== this.type;}},
-  methods:{
-    isSingle: function(pType){console.log('isSingle: '+pType);return this.type==pType},
-    isArchive: function(pType){console.log('isArchive: '+pType+this.count);return  (this.type==pType && this.count>1)},
-  }
-  */
+};
+const pageComponent = function(){
   return Vue.component('body-content',{
     template: '#body-content',
-    components:defComponents,
-    data: function(){
-      console.log('data');
-      console.log(componentData);
-      // if(InitialPage.data.length > 0 && 'undefined' !== typeof InitialPage.data[0].type){
-      //   componentData['type'] = InitialPage.data[0].type;
-      // }else console.log('wpGurus: WARNING, type is undefined in the initial page');
-      // componentData['posts']=InitialPage.data;
-      return componentData;
+    components:{
+      'primary-menu': vjsMenu('primary'),
+      'footer-menu': vjsMenu('footer'),
+      'network-menu': vjsMenu('network'),
+      'language-menu': vjsLang(),
+      'logo-image': compLogo,
+      'content-page':{
+        template:'#content-page',
+      }
     },
-    computed:{isPage: function(){console.log('isPage: '+this.type);return 'page'== this.type;}},
+    data: function(){
+      return {'data':componentData};
+    },
+    computed:{isPage: function(){
+      if('page'== this.data.type){
+        console.log('found page');
+        return true;
+      }else return false;
+    }},
     methods:{
-      isSingle: function(pType){console.log('isSingle: '+pType);return this.type==pType},
-      isArchive: function(pType){console.log('isArchive: '+pType+this.count);return  (this.type==pType && this.count>1)},
+      isSingle: function(pType){
+        if (this.data.type==pType && this.data.single){
+          console.log('found '+pType+' single');
+          return true;
+        }else return false;
+      },
+      isArchive: function(pType){
+        if(this.data.type==pType && this.data.archive){
+          console.log('found '+pType+' archive');
+          return true;
+        }else return false;
+      },
       hasMenu: function(type){
         let menu = true;
-        if('undefined' == typeof this.menus[type]){
+        if('undefined' == typeof this.data.menus[type]){
           menu = false;
         }
         return menu;
       },
-      restRequest: function(path){
-        if(path.length>0){
-          restRequest=path;
+      restRequest: function(path, ptype=null, otype=null){
+        console.log('restRequest: '+path);
+        if('undefined' !== typeof ptype) postType = ptype;
+        else postType = '';
+        isArchive = false;
+        isSingle = false;
+        isTaxonomy =false;
+        if('undefined' !== typeof otype){
+          switch(otype){
+            case 'single':
+              isSingle = true;
+              break;
+            case 'archive':
+              isArchive = true;
+              break;
+            case 'taxonomy':
+              isTaxonomy = true;
+              break;
+          }
         }
+        if(path.length>0)restRequest=path;
       },
       articleId: function(post){
         return 'post-'+post.id;
@@ -183,51 +219,64 @@ const pageComponent = function(){
       }
     },
     created: function(){
-      console.log('creating...');
-        //stretchFullWidthRows(); //SO PageBuilder.
-        //this.posts = [{title:{rendered:''},content:{rendered:''}}];
-        let path = SitePaths.root.replace(/\/$/, "") + this.$route.path.replace(/\/$/, "");
-        //console.log(path);
-        //strip trailing slash.
-        //path = path.replace(/\/$/, "");
-        if(InitialPage && InitialPage.posts.length>0 && this.$route.path === SitePaths.currentRoute){
-          //console.log('setup initial data');
-          for(let key in componentData){
-            this[key] = componentData[key];
-          }
-          //this.posts = componentData.posts;
-        }else{
-          this.$http.get(restRequest,{}).then( (data) => {
-            if(data.body instanceof Array){
-              this.posts = data.body;
-            }else{
-              this.posts = [data.body];
-            }
-            this.homepage = (path === SitePaths.home);
-            if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
-              if(data.body instanceof Array){
-                let home = SitePaths.home.replace(/\/$/, "");
-                let getpath = WPrestPath.languages;
-                if(path !== home){ //inner page request/
-                  let slugs = this.$route.path.split('/');
-                  let pageSlug = slugs[slugs.length-1];
-                  if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
-                  getpath = WPrestPath.languages+pageSlug;
-                }
-                this.$http.get(getpath).then( (data) => {
-                  this.menus.languages = data.body;
-                }, (data) => {
-                  this.status = { error: "failed to load the languages menu"};
-                });
-              }else{
-                this.menus.languages = data.body.language_menu;
-              }
-            }
-          }, (data) => {
-            this.status = { error: "failed to load the page"};
-          });
-          //end get.
+      let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
+      let home = SitePaths.home;
+      //get rest data.
+      let arrPromises = [this.$http.get(restRequest)];
+      let rIdx =0;
+      if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
+        rIdx++;
+        let getpath = WPrestPath.languages;
+        if(path !== home){ //inner page request/
+          let slugs = this.$route.path.split('/');
+          let pageSlug = slugs[slugs.length-1];
+          if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
+          getpath = WPrestPath.languages+pageSlug;
         }
+        arrPromises[rIdx]=this.$http.get(getpath);
+      }
+      //extra custom request.
+      if('undefined' != typeof VueCustomRoutes[this.$route.path]){
+        for(let key in VueCustomRoutes[this.$route.path]){
+          rIdx++;
+          let path = VueCustomRoutes[this.$route.path][key];
+          arrPromises[rIdx] = this.$http.get(path)
+        }
+      }
+      Promise.all(arrPromises).then( (data) => {
+        rIdx = 0;
+        if(data[rIdx].body instanceof Array){
+          componentData.posts = data[rIdx].body;
+        }else{
+          componentData.posts = [data[rIdx].body];
+        }
+        componentData.single = isSingle; //set in restRequest();
+        componentData.archive = isArchive;
+        componentData.type = postType;
+        componentData.homepage = (path === home);
+        //language menus for new page.
+        if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
+          rIdx++;
+          componentData.menus.languages = data[rIdx].body;
+        }
+        //extra custom request.
+        componentData.custom={};
+        if('undefined' != typeof VueCustomRoutes[this.$route.path]){
+          for(let key in VueCustomRoutes[this.$route.path]){
+            rIdx++;
+            componentData.custom[key] = data[rIdx].body;
+            console.log('added custom data: '+key);
+            console.log(componentData.custom[key]);
+          }
+        }
+        console.log('vue page component created, data:');
+        console.log(componentData);
+        this.data = componentData;
+      }, (data) => {
+        console.log('ERROR,failed to get api data');
+        console.log(data);
+        this.status = { error: "failed to load the page"};
+      });
     }
   });
 }
