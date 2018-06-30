@@ -136,14 +136,14 @@ class Initial_LoadData {
       'homelink' => $home,
       'lang' => apply_filters('wpgurus_theme_current_language',get_locale())
 		) ;
-		global $wp;
-    $custom_data = array();
-    $route = $wp->request ;
-    //debug_msg($_SERVER['REQUEST_URI']);
-    //debug_msg($route);
-    $custom_data = apply_filters('wpgurus_theme_intial_page', $custom_data, $route, $data);
-		if(!empty($custom_data)) $data = array_merge($data, $custom_data);
-		//debug_msg
+		// global $wp;
+    // $custom_data = array();
+    // $route = $wp->request ;
+    // //debug_msg($_SERVER['REQUEST_URI']);
+    // //debug_msg($route);
+    // $custom_data = apply_filters('wpgurus_theme_intial_page', $custom_data, $route, $data);
+		// if(!empty($custom_data)) $data = array_merge($data, $custom_data);
+		// //debug_msg
     return wp_json_encode($data);
 	}
 

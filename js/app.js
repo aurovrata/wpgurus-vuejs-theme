@@ -265,18 +265,31 @@ const pageComponent = function(){
           for(let key in VueCustomRoutes[this.$route.path]){
             rIdx++;
             componentData.custom[key] = data[rIdx].body;
-            console.log('added custom data: '+key);
-            console.log(componentData.custom[key]);
+            // console.log('added custom data: '+key);
+            // console.log(componentData.custom[key]);
           }
         }
-        console.log('vue page component created, data:');
-        console.log(componentData);
+        // console.log('vue page component created, data:');
+        // console.log(componentData);
         this.data = componentData;
       }, (data) => {
         console.log('ERROR,failed to get api data');
         console.log(data);
         this.status = { error: "failed to load the page"};
       });
+    },
+    mounted: function(){
+      //trigger an update on the page body.
+      let event = new CustomEvent("wpgurus-vuejs-mounted", {
+      		detail: {
+      			message: "Mounted VueJs",
+      			time: new Date(),
+      		},
+      		bubbles: true,
+      		cancelable: true
+      	}
+      );
+      document.body.dispatchEvent(event);
     }
   });
 }
