@@ -102,7 +102,8 @@ class Initial_LoadData {
 		*/
     $query = array(
       'post_type' => $types,
-      'status' => 'published'
+      'status' => 'published',
+			'nopaging' => true
     );
     $pages = get_posts($query);
 		$data_pages = array();
