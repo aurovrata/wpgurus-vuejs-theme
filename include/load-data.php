@@ -91,12 +91,23 @@ class Initial_LoadData {
 		   '_builtin' => false,
 			 'show_ui'  => true
 		);
+		$rest_bases=array();
+		$data_pages = array();
 		$cpt_types = get_post_types( $cpt_args, 'objects', 'and' );
 		//by default get the page & post
     $types = array('page', 'post');
     foreach($cpt_types as $cpt_type){
-      $types[] = $cpt_type->name;
-    }
+			$type = $cpt_type->name;
+      $types[] = $type;
+			$obj = get_post_type_object($type);
+			$rest = empty($obj->rest_base) ? $type : $obj->rest_base;
+			$rest_bases[$type] = $rest;
+			$archive = get_post_type_archive_link($type);
+			if(false !== $archive){
+				$route = str_replace($root,'/',$archive);
+				$data_pages[$route] = rest_url('/wp/v2/'.$rest.'/');
+			}
+		}
 		/**
 		* @todo apply a filter for the type of posts to capture in the vuejs router.
 		*/
@@ -106,13 +117,10 @@ class Initial_LoadData {
 			'nopaging' => true
     );
     $pages = get_posts($query);
-		$data_pages = array();
     if($pages){
       foreach($pages as $page){
 				$route = str_replace($root,'/',get_permalink($page));
-				$obj = get_post_type_object($page->post_type);
-				$rest = empty($obj->rest_base) ? $page->post_type : $obj->rest_base;
-        $data_pages[$route] = rest_url('/wp/v2/'.$rest.'/'.$page->ID);
+        $data_pages[$route] = rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID);
       }
     }
 		//front page.

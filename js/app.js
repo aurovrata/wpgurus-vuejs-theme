@@ -221,11 +221,13 @@ const pageComponent = function(){
         arrPromises[rIdx]=this.$http.get(getpath);
       }
       //extra custom request.
-      if('undefined' != typeof VueCustomRoutes[this.$route.path]){
-        for(let key in VueCustomRoutes[this.$route.path]){
+      if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
+        console.log('found extra rest resquest:');
+        for(let key in VueCustomRoutes.routes[this.$route.path]){
           rIdx++;
-          let path = VueCustomRoutes[this.$route.path][key];
+          let path = VueCustomRoutes.routes[this.$route.path][key];
           arrPromises[rIdx] = this.$http.get(path)
+          console.log(VueCustomRoutes.routes[this.$route.path][key]);
         }
       }
       Promise.all(arrPromises).then( (data) => {
@@ -246,8 +248,8 @@ const pageComponent = function(){
         }
         //extra custom request.
         componentData.custom={};
-        if('undefined' != typeof VueCustomRoutes[this.$route.path]){
-          for(let key in VueCustomRoutes[this.$route.path]){
+        if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
+          for(let key in VueCustomRoutes.routes[this.$route.path]){
             rIdx++;
             componentData.custom[key] = data[rIdx].body;
             console.log('added custom data: '+key);
