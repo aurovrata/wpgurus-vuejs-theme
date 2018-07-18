@@ -102,17 +102,24 @@ function polylang_language_menu($menu=array(), $args=array()){
   if(isset($args['id'])){
     $pll_args['post_id']=$args['id'];
   }else if(isset($args['slug'])){
-    $pll_args['force_home']=1;
+    /** Fix for translation menu.
+    * @since v0.6
+    */
+    $post_args = array(
+    	'name'           => $args['slug'],
+    	'post_type'      => 'any',
+    	'post_status'    => 'publish',
+    	'posts_per_page' => 1
+    );
+    $my_posts = get_posts( $post_args );
+    if( $my_posts ) {
+    	$pll_args['post_id']=$my_posts[0]->ID;
+    }else $pll_args['force_home']=1;
   }
   if(function_exists('pll_the_languages')){
     $menu = pll_the_languages($pll_args);
   }
-  if(isset($args['slug'])){
-    foreach($menu as $lang=>&$item){
-      $slug = pll_translate_string($args['slug'],$lang);
-      $item['url'].=$slug;
-    }
-  }
+
   return $menu;
 }
 /**
@@ -159,7 +166,7 @@ function set_current_language($lang){
   return $lang;
 }
 function set_polylang_rest_path($path){
-  return home_url('/wp-json/wpgurus/v2/polylang/');
+  return rest_url('/wpgurus/v2/polylang/');
 }
 
 /**

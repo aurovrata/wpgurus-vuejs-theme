@@ -79,7 +79,54 @@ class Initial_LoadData {
 				$data[$route] = $paths;
 	    }
 		}
-    return \wp_json_encode($data);
+    /**
+    * add all published pages to custom routes.
+    * add all published posts to custom routes.
+    * add all public published cpt to custom routes
+    * @since v0.6
+    */
+		//get cpt post_types.
+		$cpt_args = array(
+		   'public'   => true,
+		   '_builtin' => false,
+			 'show_ui'  => true
+		);
+		$cpt_types = get_post_types( $cpt_args, 'objects', 'and' );
+		//by default get the page & post
+    $types = array('page', 'post');
+    foreach($cpt_types as $cpt_type){
+      $types[] = $cpt_type->name;
+    }
+		/**
+		* @todo apply a filter for the type of posts to capture in the vuejs router.
+		*/
+    $query = array(
+      'post_type' => $types,
+      'status' => 'published'
+    );
+    $pages = get_posts($query);
+		$data_pages = array();
+    if($pages){
+      foreach($pages as $page){
+				$route = str_replace($root,'/',get_permalink($page));
+				$obj = get_post_type_object($page->post_type);
+				$rest = empty($obj->rest_base) ? $page->post_type : $obj->rest_base;
+        $data_pages[$route] = rest_url('/wp/v2/'.$rest.'/'.$page->ID);
+      }
+    }
+		//front page.
+		$page_id = get_option('page_on_front');
+		$home = str_replace($root,'/',home_url('/'));
+	  if ( $page_id > 0 ) {
+	    // Set url for call to retrieve the post, need WP REST API for this
+	    $data_pages[$home] = rest_url( '/wp/v2/pages/' . $page_id);
+		}else{
+			$data_pages[$home] = rest_url( '/wp/v2/posts/');
+		}
+    return \wp_json_encode(array(
+			'routes'=>$data,
+			'vues'=>$data_pages
+		));
   }
 	public function add_json_rest_path(){
 		$root = rest_url('/wp/v2/');

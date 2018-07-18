@@ -123,7 +123,11 @@ const componentData = {
   'single':isSingle,
   'archive':isArchive,
   'istax':isTaxonomy,
+  'lang':'en',
   'custom':{}
+}
+if('undefined' != typeof InitialMenu['languages']){
+  componentData.lang = InitialPage.lang;
 }
 const compLogo = {
   template:'#logo-image',
@@ -189,28 +193,6 @@ const pageComponent = function(){
         }
         return menu;
       },
-      restRequest: function(path, ptype=null, otype=null){
-        console.log('restRequest: '+path);
-        if('undefined' !== typeof ptype) postType = ptype;
-        else postType = '';
-        isArchive = false;
-        isSingle = false;
-        isTaxonomy =false;
-        if('undefined' !== typeof otype){
-          switch(otype){
-            case 'single':
-              isSingle = true;
-              break;
-            case 'archive':
-              isArchive = true;
-              break;
-            case 'taxonomy':
-              isTaxonomy = true;
-              break;
-          }
-        }
-        if(path.length>0)restRequest=path;
-      },
       articleId: function(post){
         return 'post-'+post.id;
       },
@@ -221,8 +203,11 @@ const pageComponent = function(){
     created: function(){
       let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
       let home = SitePaths.home;
+      console.log('Route path:'+this.$route.path);
       //get rest data.
-      let arrPromises = [this.$http.get(restRequest)];
+      let restpath = VueCustomRoutes.vues[this.$route.path];
+      console.log('Vue rest request:'+restpath);
+      let arrPromises = [this.$http.get(restpath)];
       let rIdx =0;
       if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
         rIdx++;
@@ -265,8 +250,8 @@ const pageComponent = function(){
           for(let key in VueCustomRoutes[this.$route.path]){
             rIdx++;
             componentData.custom[key] = data[rIdx].body;
-            // console.log('added custom data: '+key);
-            // console.log(componentData.custom[key]);
+            console.log('added custom data: '+key);
+            console.log(componentData.custom[key]);
           }
         }
         // console.log('vue page component created, data:');
@@ -311,6 +296,7 @@ const getRoutes = function(menu, vuec){
     }
   }
 }
+console.log('Custom routes:');
 console.log(VueCustomRoutes.routes);
 //setup routes and components.
 const bodyComponent = pageComponent(VueCustomRoutes.routes);
@@ -318,9 +304,16 @@ routes[routes.length]={
   path:rootPath,
   component: bodyComponent
 }
-getRoutes('primary', bodyComponent);
-getRoutes('footer', bodyComponent);
-getRoutes('network', bodyComponent);
+//setup pages/posts.
+for(let key in VueCustomRoutes.vues){
+  routes[routes.length]={
+    path:key,
+    component:bodyComponent
+  }
+}
+//getRoutes('primary', bodyComponent);
+//getRoutes('footer', bodyComponent);
+//getRoutes('network', bodyComponent);
 console.log('page routes');
 console.log(routes);
 const router  = new VueRouter({
