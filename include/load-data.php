@@ -56,7 +56,7 @@ class Initial_LoadData {
 	}
   public function add_json_routes(){
     $data = array();
-    $post_types = array();
+    $post_types = array('post');
     $post_types = apply_filters('wpgurus_theme_custom_post_routes', $post_types);
     $root = wpgurus_domain_url();
 		if(!empty($post_types)){
@@ -91,11 +91,16 @@ class Initial_LoadData {
 		   '_builtin' => false,
 			 'show_ui'  => true
 		);
-		$rest_bases=array();
 		$data_pages = array();
 		$cpt_types = get_post_types( $cpt_args, 'objects', 'and' );
 		//by default get the page & post
     $types = array('page', 'post');
+		$rest_bases = array('post'=>'posts', 'page'=>'pages');
+		$archive = get_post_type_archive_link('post');
+		if(false !== $archive){
+			$route = str_replace($root,'/',$archive);
+			$data_pages[$route] = rest_url('/wp/v2/posts/');
+		}
     foreach($cpt_types as $cpt_type){
 			$type = $cpt_type->name;
       $types[] = $type;
@@ -118,7 +123,14 @@ class Initial_LoadData {
     );
     $pages = get_posts($query);
     if($pages){
+			$posts_page = get_option( 'page_for_posts' );
       foreach($pages as $page){
+				/**
+				*v0.6 check if the page is used as the posts archive page.
+				*/
+				if($posts_page == $page->ID){
+					continue;
+				}
 				$route = str_replace($root,'/',get_permalink($page));
         $data_pages[$route] = rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID);
       }
@@ -185,7 +197,7 @@ class Initial_LoadData {
     else $home=array('type'=>'post_type_archive', 'object'=>'post');
     $data =  array(
 			'single' => is_single(),
-			'archive'=> is_archive(),
+			'archive'=> is_archive() || is_home(),
 			'type'=> $post_type ,
 			'paging' => $this->get_total_pages(),
       'homepage' => is_front_page(),
