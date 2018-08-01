@@ -96,10 +96,14 @@ class Initial_LoadData {
 		//by default get the page & post
     $types = array('page', 'post');
 		$rest_bases = array('post'=>'posts', 'page'=>'pages');
-		$archive = get_post_type_archive_link('post');
-		if(false !== $archive){
-			$route = str_replace($root,'/',$archive);
-			$data_pages[$route] = rest_url('/wp/v2/posts/');
+		$front_page = get_option('page_on_front',0);
+		if($front_page>0){
+			$posts_page = get_option('page_for_posts',0);
+			if($posts_page>0){
+				$archive = get_post_type_archive_link('post');
+				$route = str_replace($root,'/',$archive);
+				$data_pages[$route] = rest_url('/wp/v2/posts/');
+			}
 		}
     foreach($cpt_types as $cpt_type){
 			$type = $cpt_type->name;
