@@ -14,8 +14,8 @@ let isSingle = InitialPage.single;
 let isTaxonomy = false;
 //strip trailing slash.
 const initialLink = SitePaths.root.replace(/\/$/, "") + SitePaths.currentRoute;//.replace(/\/$/, "");
-console.log('initialLink:'+initialLink);
-console.log('initialRest:'+restRequest);
+// console.log('initialLink:'+initialLink);
+// console.log('initialRest:'+restRequest);
 //declare an event bus (https://alligator.io/vuejs/global-event-bus/).
 const eventQ = new Vue();
 // main content component.
@@ -99,6 +99,11 @@ const vjsLang = function(){
 
 //setup menu components and routes.
 const routes = [];//VueCustomRoutes.routes;
+//custom reactive data.
+var customReactiveData = (function (crd){
+  //add something
+  return crd;
+}(customReactiveData || {}));
 
 const componentData = {
   'status':'',
@@ -124,7 +129,8 @@ const componentData = {
   'archive':isArchive,
   'istax':isTaxonomy,
   'lang':'en',
-  'custom':{}
+  'custom':{},
+  'form':customReactiveData,
 }
 if('undefined' != typeof InitialMenu['languages']){
   componentData.lang = InitialPage.lang;
@@ -151,6 +157,19 @@ const compLogo = {
     }
   }
 };
+//computed functions.
+var vueJScomputedModule = (function (vcm) {
+	// add capabilities...
+  vcm.isPage = function(){
+    if('page'== this.data.type){
+      console.log('found page2');
+      return true;
+    }else return false;
+  }
+	return vcm;
+}(vueJScomputedModule || {}));
+//const computed = vueJScomputedModule;
+
 const pageComponent = function(){
   return Vue.component('body-content',{
     template: '#body-content',
@@ -167,12 +186,7 @@ const pageComponent = function(){
     data: function(){
       return {'data':componentData};
     },
-    computed:{isPage: function(){
-      if('page'== this.data.type){
-        console.log('found page');
-        return true;
-      }else return false;
-    }},
+    computed:vueJScomputedModule,
     methods:{
       isSingle: function(pType){
         if (this.data.type==pType && this.data.single){
@@ -207,8 +221,10 @@ const pageComponent = function(){
       //get rest data.
       let restpath = VueCustomRoutes.vues[this.$route.path];
       console.log('Vue rest request:'+restpath);
+      //set the current page request rest path to the first index of an array of Promises.
       let arrPromises = [this.$http.get(restpath)];
       let rIdx =0;
+      //if a menu is requested, set its request rest path to the next index in the array.
       if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
         rIdx++;
         let getpath = WPrestPath.languages;
@@ -220,7 +236,7 @@ const pageComponent = function(){
         }
         arrPromises[rIdx]=this.$http.get(getpath);
       }
-      //extra custom request.
+      //extra custom request: if any set each extra request path to subsequent indexes in teh array.
       if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
         console.log('found extra rest resquest:');
         for(let key in VueCustomRoutes.routes[this.$route.path]){
@@ -230,6 +246,7 @@ const pageComponent = function(){
           console.log(VueCustomRoutes.routes[this.$route.path][key]);
         }
       }
+      //now we wait until all request rest paths have been returned through out Proise object.
       Promise.all(arrPromises).then( (data) => {
         rIdx = 0;
         if(data[rIdx].body instanceof Array){
