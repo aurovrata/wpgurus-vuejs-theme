@@ -32,51 +32,44 @@ if(SitePaths.home.length > SitePaths.root.length){
 }
 
 //menu.
+/*
+menu component vuejs methods functions.
+*/
+var vueJSmenuMethodsModule = (function (vmmm) {
+	// add capabilities...
+  vmmm.relativeUrl = function(item){
+    return item.url.replace(SitePaths.root, '/');
+  }
+  vmmm.linKey = function(item){
+    return item.object+'s/'+item.object_id;
+  }
+  vmmm.itemClass = function(item){
+    let classes = 'menu-item';
+    if(item.url === document.location){
+      classes += ' menu-selected';
+    }
+    return classes;
+  }
+	return vmmm;
+}(vueJSmenuMethodsModule || {}));
+/*
+menu component vuejs computed functions.
+*/
+var vueJSmenuComputedModule = (function (vmcm) {
+	// add capabilities...
+	return vmcm;
+}(vueJSmenuComputedModule || {}));
+
 const vjsMenu = function(type){
   if('undefined' == typeof type) type = 'primary';
   if('undefined' == typeof InitialMenu[type]){
     return null;
   }
-
   return {
     template:'#'+type+'-menu',
     props:['menu'],
-    methods:{
-      restRequest: function(item){
-        if(item.isvjslink){
-          console.log('rest request: '+item._links.self);
-          restRequest=item._links.self;
-          postType = item.object;
-          isTaxonomy=false;
-          isSingle = false;
-          isArchive = false;
-          switch(item.type){
-            case 'post_type':
-              isSingle = true;
-              break;
-            case 'post_type_archive':
-              isArchive = true;
-              break;
-            case 'taxonomy':
-              isTaxonomy=true;
-              break;
-          }
-        }
-      },
-      relativeUrl: function(item){
-        return item.url.replace(SitePaths.root, '/');
-      },
-      linKey: function(item){
-        return item.object+'s/'+item.object_id;
-      },
-      itemClass: function(item){
-        let classes = 'menu-item';
-        if(item.url === document.location){
-          classes += ' menu-selected';
-        }
-        return classes;
-      }
-    }
+    methods: vueJSmenuMethodsModule,
+    computed: vueJSmenuComputedModule
   } //end component.
 }
 //get initial menu data.
@@ -86,7 +79,6 @@ const initMenu = function(type){
   }
   return InitialMenu[type]
 }
-
 const vjsLang = function(){
   if('undefined' == typeof InitialMenu['languages']){
     return null;
@@ -128,6 +120,8 @@ const componentData = {
   'single':isSingle,
   'archive':isArchive,
   'istax':isTaxonomy,
+  'taxonomy':'',
+  'term':'',
   'lang':'en',
   'custom':{},
   'form':customReactiveData,
@@ -135,40 +129,74 @@ const componentData = {
 if('undefined' != typeof InitialMenu['languages']){
   componentData.lang = InitialPage.lang;
 }
+/*
+logo component vuejs methods functions.
+*/
+var vueJSlogoMethodsModule = (function (vlmm) {
+	// add capabilities...
+	return vlmm;
+}(vueJSlogoMethodsModule || {}));
+/*
+logo component vuejs computed functions.
+*/
+var vueJSlogoComputedModule = (function (vlcm) {
+	// add capabilities...
+	return vlcm;
+}(vueJSlogoComputedModule || {}));
+
 const compLogo = {
   template:'#logo-image',
   props:['logo'],
-  methods:{
-    restRequest: function(item){
-      postType = item.object;
-      isSingle = false;
-      isArchive = false;
-      isTaxonomy = false;
-      switch(item.type){
-        case 'post_type':
-          isSingle = true;
-          break;
-        case 'post_type_archive':
-          isArchive = true;
-          break;
-      }
-      restRequest=item._links.self;
-      console.log('logo request:'+item._links.self);
-    }
-  }
+  methods: vueJSlogoMethodsModule,
+  computed: vueJSlogoComputedModule
 };
 //computed functions.
 var vueJScomputedModule = (function (vcm) {
 	// add capabilities...
   vcm.isPage = function(){
     if('page'== this.data.type){
-      console.log('found page2');
+      console.log('found page');
       return true;
     }else return false;
   }
 	return vcm;
 }(vueJScomputedModule || {}));
-//const computed = vueJScomputedModule;
+//methods functions.
+var vueJSmethodsModule = (function (vmm) {
+	// add capabilities...
+  vmm.isSingle = function(pType){
+    if (this.data.type==pType && this.data.single){
+      console.log('found '+pType+' single');
+      return true;
+    }else return false;
+  }
+  vmm.isArchive = function(pType){
+    if(this.data.type==pType && this.data.archive){
+      console.log('found '+pType+' archive');
+      return true;
+    }else return false;
+  }
+  vmm.isTaxonomy = function(tax){
+    if(this.data.taxonomy==tax && this.data.istax){
+      console.log('found taxonomy '+tax+' archive');
+      return true;
+    }else return false;
+  }
+  vmm.hasMenu = function(type){
+    let menu = true;
+    if('undefined' == typeof this.data.menus[type]){
+      menu = false;
+    }
+    return menu;
+  }
+  vmm.articleId = function(post){
+    return 'post-'+post.id;
+  }
+  vmm.childLink = function(slug){
+    return SitePaths.root.replace(/\/$/, "") + this.$route.path + slug;
+  }
+	return vmm;
+}(vueJSmethodsModule || {}));
 
 const pageComponent = function(){
   return Vue.component('body-content',{
@@ -187,104 +215,97 @@ const pageComponent = function(){
       return {'data':componentData};
     },
     computed:vueJScomputedModule,
-    methods:{
-      isSingle: function(pType){
-        if (this.data.type==pType && this.data.single){
-          console.log('found '+pType+' single');
-          return true;
-        }else return false;
-      },
-      isArchive: function(pType){
-        if(this.data.type==pType && this.data.archive){
-          console.log('found '+pType+' archive');
-          return true;
-        }else return false;
-      },
-      hasMenu: function(type){
-        let menu = true;
-        if('undefined' == typeof this.data.menus[type]){
-          menu = false;
-        }
-        return menu;
-      },
-      articleId: function(post){
-        return 'post-'+post.id;
-      },
-      childLink: function(slug){
-        return SitePaths.root.replace(/\/$/, "") + this.$route.path + slug;
-      }
-    },
+    methods: vueJSmethodsModule,
     created: function(){
       let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
       let home = SitePaths.home;
       console.log('Route path:'+this.$route.path);
       //get rest data.
-      let restpath = VueCustomRoutes.vues[this.$route.path];
-      console.log('Vue rest request:'+restpath);
-      //set the current page request rest path to the first index of an array of Promises.
-      let arrPromises = [this.$http.get(restpath)];
-      let rIdx =0;
-      //if a menu is requested, set its request rest path to the next index in the array.
-      if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
-        rIdx++;
-        let getpath = WPrestPath.languages;
-        if(path !== home){ //inner page request/
-          let slugs = this.$route.path.split('/');
-          let pageSlug = slugs[slugs.length-1];
-          if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
-          getpath = WPrestPath.languages+pageSlug;
+      if('undefined' != typeof VueCustomRoutes.vues[this.$route.path]){
+        let restRequest = VueCustomRoutes.vues[this.$route.path];
+        let restpath = restRequest.rest;
+        componentData.type = restRequest.post;
+        componentData.archive = false;
+        componentData.single = false;
+        switch(restRequest.type){
+          case 'archive':
+            componentData.archive = true;
+            break;
+          case 'single':
+            componentData.single = true;
+            break;
         }
-        arrPromises[rIdx]=this.$http.get(getpath);
-      }
-      //extra custom request: if any set each extra request path to subsequent indexes in teh array.
-      if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
-        console.log('found extra rest resquest:');
-        for(let key in VueCustomRoutes.routes[this.$route.path]){
-          rIdx++;
-          let path = VueCustomRoutes.routes[this.$route.path][key];
-          arrPromises[rIdx] = this.$http.get(path)
-          console.log(VueCustomRoutes.routes[this.$route.path][key]);
+        componentData.istax = false;
+        componentData.taxonomy = '';
+        if('undefined' != typeof restRequest.taxonomy) {
+          componentData.istax = true;
+          componentData.taxonomy = restRequest.taxonomy;
         }
-      }
-      //now we wait until all request rest paths have been returned through out Proise object.
-      Promise.all(arrPromises).then( (data) => {
-        rIdx = 0;
-        if(data[rIdx].body instanceof Array){
-          componentData.posts = data[rIdx].body;
-        }else{
-          componentData.posts = [data[rIdx].body];
-        }
-        componentData.single = isSingle; //set in restRequest();
-        componentData.archive = isArchive;
-        componentData.type = postType;
-        componentData.homepage = (path === home);
-        //language menus for new page.
+        componentData.term = '';
+        if('undefined' != typeof restRequest.term) componentData.term = restRequest.term;
+
+        console.log('Vue rest request: '+restpath);
+        //set the current page request rest path to the first index of an array of Promises.
+        let arrPromises = [this.$http.get(restpath)];
+        let rIdx =0;
+        //if a menu is requested, set its request rest path to the next index in the array.
         if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
           rIdx++;
-          componentData.menus.languages = data[rIdx].body;
+          let getpath = WPrestPath.languages;
+          if(path !== home){ //inner page request/
+            let slugs = this.$route.path.split('/');
+            let pageSlug = slugs[slugs.length-1];
+            if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
+            getpath = WPrestPath.languages+pageSlug;
+          }
+          arrPromises[rIdx]=this.$http.get(getpath);
         }
-        //extra custom request.
-        componentData.custom={};
+        //extra custom request: if any set each extra request path to subsequent indexes in teh array.
         if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
+          console.log('found extra rest resquest:');
           for(let key in VueCustomRoutes.routes[this.$route.path]){
             rIdx++;
-            componentData.custom[key] = data[rIdx].body;
-            console.log('added custom data: '+key);
-            console.log(componentData.custom[key]);
+            let path = VueCustomRoutes.routes[this.$route.path][key];
+            arrPromises[rIdx] = this.$http.get(path)
+            console.log(VueCustomRoutes.routes[this.$route.path][key]);
           }
         }
-        // console.log('vue page component created, data:');
-        // console.log(componentData);
-        this.data = componentData;
-      }, (data) => {
-        console.log('ERROR,failed to get api data');
-        console.log(data);
-        this.status = { error: "failed to load the page"};
-      });
+        //now we wait until all request rest paths have been returned through out Proise object.
+        Promise.all(arrPromises).then( (data) => {
+          rIdx = 0;
+          if(data[rIdx].body instanceof Array){
+            componentData.posts = data[rIdx].body;
+          }else{
+            componentData.posts = [data[rIdx].body];
+          }
+          componentData.homepage = (path === home);
+          //language menus for new page.
+          if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
+            rIdx++;
+            componentData.menus.languages = data[rIdx].body;
+          }
+          //extra custom request.
+          componentData.custom={};
+          if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
+            for(let key in VueCustomRoutes.routes[this.$route.path]){
+              rIdx++;
+              componentData.custom[key] = data[rIdx].body;
+              console.log('added custom data: '+key);
+              console.log(componentData.custom[key]);
+            }
+          }
+          this.data = componentData;
+        }, (data) => {
+          console.log('ERROR,failed to get api data');
+          console.log(data);
+          this.status = { error: "failed to load the page"};
+        });
+      }//end if rest request found.  TODO: handle error.
+
     },
-    mounted: function(){
+    updated: function(){
       //trigger an update on the page body.
-      let event = new CustomEvent("wpgurus-vuejs-mounted", {
+      let event = new CustomEvent("wpgurus-vuejs-updated", {
       		detail: {
       			message: "Mounted VueJs",
       			time: new Date(),
@@ -294,6 +315,7 @@ const pageComponent = function(){
       	}
       );
       document.body.dispatchEvent(event);
+      console.log('vuejs updated');
     }
   });
 }

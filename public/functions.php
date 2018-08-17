@@ -43,7 +43,7 @@ function wpgurus_enqueue_styles() {
     $dep[] = 'custom-apps';
   }
   wp_enqueue_script( WPGURUS_APP, $theme_folder . '/js/app.js', $dep, WPGURUS_V2_VERSION, true);
-  wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', null,WPGURUS_V2_VERSION,'all');
+  wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', array() , WPGURUS_V2_VERSION,'all');
 }
 //function to include vuejs templates.
 function include_vue_template($id, $component, $page='index' ){

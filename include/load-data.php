@@ -55,6 +55,10 @@ class Initial_LoadData {
 		$result = wp_add_inline_script( WPGURUS_APP, $data, 'before' );
 	}
   public function add_json_routes(){
+		/*
+		* Add custom api rest paths to the vuejs component data tree for specific routes.
+		* $data[<relative route path>] = array(<data-unique-key>=><rest api path>)
+		*/
     $data = array();
     $post_types = array('post');
     $post_types = apply_filters('wpgurus_theme_custom_post_routes', $post_types);
@@ -102,7 +106,11 @@ class Initial_LoadData {
 			if($posts_page>0){
 				$archive = get_post_type_archive_link('post');
 				$route = str_replace($root,'/',$archive);
-				$data_pages[$route] = rest_url('/wp/v2/posts/');
+				$data_pages[$route] = array(
+					'rest'=>rest_url('/wp/v2/posts/'),
+					'post'=>'post',
+					'type'=>'archive'
+				);
 			}
 		}
     foreach($cpt_types as $cpt_type){
@@ -114,7 +122,11 @@ class Initial_LoadData {
 			$archive = get_post_type_archive_link($type);
 			if(false !== $archive){
 				$route = str_replace($root,'/',$archive);
-				$data_pages[$route] = rest_url('/wp/v2/'.$rest.'/');
+				$data_pages[$route] = array(
+					'rest'=>rest_url('/wp/v2/'.$rest.'/'),
+					'post'=>$type,
+					'type'=>'archive'
+				);
 			}
 		}
 		/**
@@ -136,7 +148,11 @@ class Initial_LoadData {
 					continue;
 				}
 				$route = str_replace($root,'/',get_permalink($page));
-        $data_pages[$route] = rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID);
+        $data_pages[$route] = array(
+					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID),
+					'post'=>$page->post_type,
+					'type'=>'single'
+				);
       }
     }
 		//front page.
@@ -144,10 +160,48 @@ class Initial_LoadData {
 		$home = str_replace($root,'/',home_url('/'));
 	  if ( $page_id > 0 ) {
 	    // Set url for call to retrieve the post, need WP REST API for this
-	    $data_pages[$home] = rest_url( '/wp/v2/pages/' . $page_id);
+	    $data_pages[$home] = array(
+				'rest'=>rest_url( '/wp/v2/pages/' . $page_id),
+				'post'=>'page',
+				'type'=>'single'
+			);
 		}else{
-			$data_pages[$home] = rest_url( '/wp/v2/posts/');
+			$data_pages[$home] =array(
+				'rest'=> rest_url( '/wp/v2/posts/'),
+				'post'=>'post',
+				'type'=>'archive'
+			);
 		}
+    /** add permalinks=>rest paths for taxonomy terms.
+    * @since v0.7
+    */
+    foreach($types as $type){
+      $taxonomies = get_object_taxonomies( $type, 'object' );
+      foreach($taxonomies as $taxonomy => $tax_obj){
+        if(apply_filters('wpgurus_include_taxonomy_routes',false, $taxonomy, $type)){
+					$terms = get_terms( array(
+				    'taxonomy' => $taxonomy,
+				    'hide_empty' => false,
+					) );
+					foreach($terms as $term){
+						$route = str_replace($root,'/', get_term_link($term));
+						$data_pages[$route] = array(
+							'rest'=>rest_url( '/wp/v2/'.$rest_bases[$type].'/?'.$taxonomy.'='.$term->term_id),
+							'post'=>$type,
+							'type'=>'archive',
+							'taxonomy'=>$taxonomy,
+							'term'=>$term->term_id
+						);
+						//in addition add the custom route to this term.
+						$base = empty($tax_obj->rest_base) ? $taxonomy : $tax_obj->rest_base ;
+						$data[$route] = array(
+							$taxonomy => rest_url('/wp/v2/'. $base .'/'. $term->term_id)
+						);
+					}
+        }
+      }
+    }
+
     return \wp_json_encode(array(
 			'routes'=>$data,
 			'vues'=>$data_pages
