@@ -125,6 +125,7 @@ const componentData = {
   'lang':'en',
   'custom':{},
   'form':customReactiveData,
+  'styles':''
 }
 if('undefined' != typeof InitialMenu['languages']){
   componentData.lang = InitialPage.lang;
@@ -304,6 +305,25 @@ const pageComponent = function(){
 
     },
     updated: function(){
+      //inline styles if any.
+      if('undefined' != typeof this.data.posts[0].wg_inline_style && this.data.single){
+        for(let sid in this.data.posts[0].wg_inline_style){
+          let elId = 'wpgurus-inline-style-'+sid;
+          if(sid.length>0) elId = sid;
+          let style = document.getElementById(elId);
+          console.log('creating <style> element: '+elId);
+          if('undefined' == typeof style){
+            style = document.createElement('style')
+            style.type = "text/css"
+            style.id = elId;
+            // style.appendChild(document.createTextNode(''))
+            // this.styleNode = style.childNodes[0] // a reference I store in the data hash
+            document.head.appendChild(style)
+          }
+          style.innerText = this.data.posts[0].wg_inline_style[sid];
+        }
+      }
+
       //trigger an update on the page body.
       let event = new CustomEvent("wpgurus-vuejs-updated", {
       		detail: {
