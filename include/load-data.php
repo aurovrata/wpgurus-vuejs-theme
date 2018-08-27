@@ -194,17 +194,23 @@ class Initial_LoadData {
 						);
 						//in addition add the custom route to this term.
 						$base = empty($tax_obj->rest_base) ? $taxonomy : $tax_obj->rest_base ;
-						$data[$route] = array(
+						$path = array(
 							$taxonomy => rest_url('/wp/v2/'. $base .'/'. $term->term_id)
 						);
+            //let user add additional routes.
+            $apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
+    				foreach($apis as $api_data){
+    					$paths[$api_data] = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+    				}
+            $data[$route] = $paths;
 					}
         }
       }
     }
 
     return \wp_json_encode(array(
-			'routes'=>$data,
-			'vues'=>$data_pages
+			'routes'=>$data, //custom extra rest requests.
+			'vues'=>$data_pages //default url_path=>rest_path Vue JS routes.
 		));
   }
 	public function add_json_rest_path(){
