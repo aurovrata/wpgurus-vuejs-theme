@@ -59,7 +59,7 @@ function include_vue_template($id, $component, $page='index' ){
   return;
 }
 /**
-*
+* This is hooked to 'rest_menus_format_menu_item', a filter from wp-api-menus plugin which allows the menu link to be modified before it is sent to the rest request.
 *
 * @param array $rest_menu the menu being returned for the rest api.
 */
@@ -71,6 +71,14 @@ function add_menu_rest_fields($rest_menu_item){
   $vjs = get_post_meta( $item_id, '_menu_item_exit_vuejs_router', true);
   if($vjs && 'exit'==$vjs){
     $vjs = false;
+    /**
+    * in order to force a relative link to reload we need to absolute link.
+    *@since v0.8.1
+    */
+    if(isset($rest_menu_item['url']) && strpos($rest_menu_item['url'], '/')==0){
+      if(is_multisite()) $rest_menu_item['url'] = network_home_url($rest_menu_item['url']);
+      else $rest_menu_item['url'] = home_url($rest_menu_item['url']);
+    }
   }else{
     $vjs = true;
   }
