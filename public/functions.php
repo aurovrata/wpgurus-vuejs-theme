@@ -78,6 +78,7 @@ function add_menu_rest_fields($rest_menu_item){
     if(isset($rest_menu_item['url']) && strpos($rest_menu_item['url'], '/')==0){
       if(is_multisite()) $rest_menu_item['url'] = network_home_url($rest_menu_item['url']);
       else $rest_menu_item['url'] = home_url($rest_menu_item['url']);
+      if(substr($rest_menu_item['url'],-1) != '/') $rest_menu_item['url'] .='/';
     }
   }else{
     $vjs = true;
