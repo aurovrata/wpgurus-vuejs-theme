@@ -14,8 +14,8 @@ let isSingle = InitialPage.single;
 let isTaxonomy = false;
 //strip trailing slash.
 const initialLink = SitePaths.root.replace(/\/$/, "") + SitePaths.currentRoute;//.replace(/\/$/, "");
-// console.log('initialLink:'+initialLink);
-// console.log('initialRest:'+restRequest);
+// if(wpGurusVueJSlocal.debug) console.log('initialLink:'+initialLink);
+// if(wpGurusVueJSlocal.debug) console.log('initialRest:'+restRequest);
 //declare an event bus (https://alligator.io/vuejs/global-event-bus/).
 const eventQ = new Vue();
 // main content component.
@@ -156,7 +156,7 @@ var vueJScomputedModule = (function (vcm) {
 	// add capabilities...
   vcm.isPage = function(){
     if('page'== this.data.type){
-      console.log('found page');
+      if(wpGurusVueJSlocal.debug) console.log('found page');
       return true;
     }else return false;
   }
@@ -167,19 +167,19 @@ var vueJSmethodsModule = (function (vmm) {
 	// add capabilities...
   vmm.isSingle = function(pType){
     if (this.data.type==pType && this.data.single){
-      console.log('found '+pType+' single');
+      if(wpGurusVueJSlocal.debug) console.log('found '+pType+' single');
       return true;
     }else return false;
   }
   vmm.isArchive = function(pType){
     if(this.data.type==pType && this.data.archive){
-      console.log('found '+pType+' archive');
+      if(wpGurusVueJSlocal.debug) console.log('found '+pType+' archive');
       return true;
     }else return false;
   }
   vmm.isTaxonomy = function(tax){
     if(this.data.taxonomy==tax && this.data.istax){
-      console.log('found taxonomy '+tax+' archive');
+      if(wpGurusVueJSlocal.debug) console.log('found taxonomy '+tax+' archive');
       return true;
     }else return false;
   }
@@ -220,7 +220,7 @@ const pageComponent = function(){
     created: function(){
       let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
       let home = SitePaths.home;
-      console.log('Route path:'+this.$route.path);
+      if(wpGurusVueJSlocal.debug) console.log('Route path:'+this.$route.path);
       //get rest data.
       if('undefined' != typeof VueCustomRoutes.vues[this.$route.path]){
         let restRequest = VueCustomRoutes.vues[this.$route.path];
@@ -245,7 +245,7 @@ const pageComponent = function(){
         componentData.term = '';
         if('undefined' != typeof restRequest.term) componentData.term = restRequest.term;
 
-        console.log('Vue rest request: '+restpath);
+        if(wpGurusVueJSlocal.debug) console.log('Vue rest request: '+restpath);
         //set the current page request rest path to the first index of an array of Promises.
         let arrPromises = [this.$http.get(restpath)];
         let rIdx =0;
@@ -263,12 +263,12 @@ const pageComponent = function(){
         }
         //extra custom request: if any set each extra request path to subsequent indexes in teh array.
         if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
-          console.log('found extra rest resquest:');
+          if(wpGurusVueJSlocal.debug) console.log('found extra rest resquest:');
           for(let key in VueCustomRoutes.routes[this.$route.path]){
             rIdx++;
             let path = VueCustomRoutes.routes[this.$route.path][key];
             arrPromises[rIdx] = this.$http.get(path)
-            console.log(VueCustomRoutes.routes[this.$route.path][key]);
+            if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes[this.$route.path][key]);
           }
         }
         //now we wait until all request rest paths have been returned through out Proise object.
@@ -291,14 +291,14 @@ const pageComponent = function(){
             for(let key in VueCustomRoutes.routes[this.$route.path]){
               rIdx++;
               componentData.custom[key] = data[rIdx].body;
-              console.log('added custom data: '+key);
-              console.log(componentData.custom[key]);
+              if(wpGurusVueJSlocal.debug) console.log('added custom data: '+key);
+              if(wpGurusVueJSlocal.debug) console.log(componentData.custom[key]);
             }
           }
           this.data = componentData;
         }, (data) => {
-          console.log('ERROR,failed to get api data');
-          console.log(data);
+          if(wpGurusVueJSlocal.debug) console.log('ERROR,failed to get api data');
+          if(wpGurusVueJSlocal.debug) console.log(data);
           this.status = { error: "failed to load the page"};
         });
       }//end if rest request found.  TODO: handle error.
@@ -311,7 +311,7 @@ const pageComponent = function(){
           let elId = 'wpgurus-inline-style-'+sid;
           if(sid.length>0) elId = sid;
           let style = document.getElementById(elId);
-          console.log('creating <style> element: '+elId);
+          if(wpGurusVueJSlocal.debug) console.log('creating <style> element: '+elId);
           if('undefined' == typeof style){
             style = document.createElement('style')
             style.type = "text/css"
@@ -335,7 +335,7 @@ const pageComponent = function(){
       	}
       );
       document.body.dispatchEvent(event);
-      console.log('vuejs updated');
+      if(wpGurusVueJSlocal.debug) console.log('vuejs updated');
     }
   });
 }
@@ -357,8 +357,8 @@ const getRoutes = function(menu, vuec){
     }
   }
 }
-console.log('Custom routes:');
-console.log(VueCustomRoutes.routes);
+if(wpGurusVueJSlocal.debug) console.log('Custom routes:');
+if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes);
 //setup routes and components.
 const bodyComponent = pageComponent(VueCustomRoutes.routes);
 routes[routes.length]={
@@ -375,8 +375,8 @@ for(let key in VueCustomRoutes.vues){
 //getRoutes('primary', bodyComponent);
 //getRoutes('footer', bodyComponent);
 //getRoutes('network', bodyComponent);
-console.log('page routes');
-console.log(routes);
+if(wpGurusVueJSlocal.debug) console.log('page routes');
+if(wpGurusVueJSlocal.debug) console.log(routes);
 const router  = new VueRouter({
   routes: routes,
   mode:'history'

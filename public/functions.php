@@ -29,20 +29,27 @@ function wpgurus_clear_body_class( $classes ) {
 }
 function wpgurus_enqueue_styles() {
   $theme_folder = get_template_directory_uri();
-  wp_enqueue_script( 'vue-js', $theme_folder . '/js/vue/vue.js', null, '2.5.16', true);
-  wp_enqueue_script( 'vue-resource-js', $theme_folder . '/js/vue/vue-resource.js', array('vue-js'), '1.5.0', true);
-  wp_enqueue_script( 'vue-router-js', $theme_folder . '/js/vue/vue-router.js', array('vue-js'), '3.0.1', true);
+  if(WP_DEBUG){
+    wp_enqueue_script( 'vue-js', $theme_folder . '/js/vue/vue.js', null, '2.5.16', true);
+    wp_enqueue_script( 'vue-resource-js', $theme_folder . '/js/vue/vue-resource.js', array('vue-js'), '1.5.0', true);
+    wp_enqueue_script( 'vue-router-js', $theme_folder . '/js/vue/vue-router.js', array('vue-js'), '3.0.1', true);
+  }else{
+    wp_enqueue_script( 'vue-js', $theme_folder . '/js/vue/prod/v2.5/vue.min.js', null, '2.5.17', true);
+    wp_enqueue_script( 'vue-resource-js', $theme_folder . '/js/vue/prod/vue-resource.min.js', array('vue-js'), '1.5.1', true);
+    wp_enqueue_script( 'vue-router-js', $theme_folder . '/js/vue/prod/vue-router.min.js', array('vue-js'), '3.0.1', true);
+  }
   wp_enqueue_script('jquery');
   /** include custo vuejs methods/data from child theme
   *@since v0.7
   */
   $custom_vuejs = get_stylesheet_directory().'/js/custom-vuejs.js';
-  $dep = array('vue-router-js', 'wp-api');
+  $dep = array('vue-router-js', 'vue-resource-js'); //, 'wp-api'
   if(file_exists($custom_vuejs)){
     wp_enqueue_script( 'custom-apps', get_stylesheet_directory_uri().'/js/custom-vuejs.js', array(), null, true);
     $dep[] = 'custom-apps';
   }
   wp_enqueue_script( WPGURUS_APP, $theme_folder . '/js/app.js', $dep, WPGURUS_V2_VERSION, true);
+  wp_localize_script(WPGURUS_APP, 'wpGurusVueJSlocal',array('debug'=>WP_DEBUG));
   wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', array() , WPGURUS_V2_VERSION,'all');
 }
 //function to include vuejs templates.
