@@ -221,6 +221,7 @@ const pageComponent = function(){
       let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
       let home = SitePaths.home;
       if(wpGurusVueJSlocal.debug) console.log('Route path:'+this.$route.path);
+      componentData.posts=[];//reset;
       //get rest data.
       if('undefined' != typeof VueCustomRoutes.vues[this.$route.path]){
         let restRequest = VueCustomRoutes.vues[this.$route.path];
@@ -306,7 +307,7 @@ const pageComponent = function(){
     },
     updated: function(){
       //inline styles if any.
-      if('undefined' != typeof this.data.posts[0].wg_inline_style && this.data.single){
+      if(this.data.posts.length > 0 && 'undefined' != typeof this.data.posts[0].wg_inline_style && this.data.single){
         for(let sid in this.data.posts[0].wg_inline_style){
           let elId = 'wpgurus-inline-style-'+sid;
           if(sid.length>0) elId = sid;
