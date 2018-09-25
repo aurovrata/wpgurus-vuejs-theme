@@ -49,7 +49,8 @@ function wpgurus_enqueue_styles() {
     $dep[] = 'custom-apps';
   }
   wp_enqueue_script( WPGURUS_APP, $theme_folder . '/js/app.js', $dep, WPGURUS_V2_VERSION, true);
-  wp_localize_script(WPGURUS_APP, 'wpGurusVueJSlocal',array('debug'=>WP_DEBUG));
+  wp_localize_script(WPGURUS_APP, 'wpGurusVueJSlocal',array('debug'=>WP_GURUS_DEBUG));
+
   wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', array() , WPGURUS_V2_VERSION,'all');
 }
 //function to include vuejs templates.

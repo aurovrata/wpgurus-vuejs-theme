@@ -306,21 +306,21 @@ const pageComponent = function(){
 
     },
     updated: function(){
+      //remove any inner styles.
+      Array.from(document.getElementsByClassName("wpgurus-inner-styles")).forEach(element => element.remove());
       //inline styles if any.
       if(this.data.posts.length > 0 && 'undefined' != typeof this.data.posts[0].wg_inline_style && this.data.single){
+        var elId, style;
         for(let sid in this.data.posts[0].wg_inline_style){
-          let elId = 'wpgurus-inline-style-'+sid;
-          if(sid.length>0) elId = sid;
-          let style = document.getElementById(elId);
+          elId = 'wpgurus-inline-style-' + sid;
+          if(sid.length>1) elId = sid;
+          style = document.getElementById(elId);
           if(wpGurusVueJSlocal.debug) console.log('creating <style> element: '+elId);
-          if('undefined' == typeof style){
-            style = document.createElement('style')
-            style.type = "text/css"
-            style.id = elId;
-            // style.appendChild(document.createTextNode(''))
-            // this.styleNode = style.childNodes[0] // a reference I store in the data hash
-            document.head.appendChild(style)
-          }
+          style = document.createElement('style')
+          style.type = "text/css"
+          style.id = elId;
+          style.class="wpgurus-inner-styles";
+          document.head.appendChild(style)
           style.innerText = this.data.posts[0].wg_inline_style[sid];
         }
       }
