@@ -59,6 +59,7 @@ class Initial_LoadData {
 		* Add custom api rest paths to the vuejs component data tree for specific routes.
 		* $data[<relative route path>] = array(<data-unique-key>=><rest api path>)
 		*/
+		$lang = $this->get_lang();
     $data = array();
     $post_types = array('post');
     $post_types = apply_filters('wpgurus_theme_custom_post_routes', $post_types);
@@ -71,14 +72,25 @@ class Initial_LoadData {
 				$apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
 				$paths = array();
 				foreach($apis as $api_data){
-					$paths[$api_data] = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					$path = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					if(false === strpos($path, 'lang=')){
+						if(false === strpos($path, '?') ) $path .='?lang='.$lang;
+						else $path .='&lang='.$lang;
+					}
+					$paths[$api_data] = $path;
 				}
+
 				$data[$route] = $paths;
 				$route = $archive.':postName';
 				$apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
 				$paths = array();
 				foreach($apis as $api_data){
-					$paths[$api_data] = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					$path = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					if(false === strpos($path, 'lang=')){
+						if(false === strpos($path, '?') ) $path .='?lang='.$lang;
+						else $path .='&lang='.$lang;
+					}
+					$paths[$api_data] = $path;
 				}
 				$data[$route] = $paths;
 	    }
@@ -101,13 +113,14 @@ class Initial_LoadData {
     $types = array('page', 'post');
 		$rest_bases = array('post'=>'posts', 'page'=>'pages');
 		$front_page = get_option('page_on_front',0);
+
 		if($front_page>0){
 			$posts_page = get_option('page_for_posts',0);
 			if($posts_page>0){
 				$archive = get_post_type_archive_link('post');
 				$route = str_replace($root,'/',$archive);
 				$data_pages[$route] = array(
-					'rest'=>rest_url('/wp/v2/posts/'),
+					'rest'=>rest_url('/wp/v2/posts/?lang='.$lang),
 					'post'=>'post',
 					'type'=>'archive'
 				);
@@ -123,7 +136,7 @@ class Initial_LoadData {
 			if(false !== $archive){
 				$route = str_replace($root,'/',$archive);
 				$data_pages[$route] = array(
-					'rest'=>rest_url('/wp/v2/'.$rest.'/'),
+					'rest'=>rest_url('/wp/v2/'.$rest.'/?lang='.$lang),
 					'post'=>$type,
 					'type'=>'archive'
 				);
@@ -149,7 +162,7 @@ class Initial_LoadData {
 				}
 				$route = str_replace($root,'/',get_permalink($page));
         $data_pages[$route] = array(
-					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID),
+					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID.'?lang='.$lang),
 					'post'=>$page->post_type,
 					'type'=>'single'
 				);
@@ -161,13 +174,13 @@ class Initial_LoadData {
 	  if ( $page_id > 0 ) {
 	    // Set url for call to retrieve the post, need WP REST API for this
 	    $data_pages[$home] = array(
-				'rest'=>rest_url( '/wp/v2/pages/' . $page_id),
+				'rest'=>rest_url( '/wp/v2/pages/' . $page_id.'?lang='.$lang),
 				'post'=>'page',
 				'type'=>'single'
 			);
 		}else{
 			$data_pages[$home] =array(
-				'rest'=> rest_url( '/wp/v2/posts/'),
+				'rest'=> rest_url( '/wp/v2/posts/?lang='.$lang),
 				'post'=>'post',
 				'type'=>'archive'
 			);
@@ -186,7 +199,7 @@ class Initial_LoadData {
 					foreach($terms as $term){
 						$route = str_replace($root,'/', get_term_link($term));
 						$data_pages[$route] = array(
-							'rest'=>rest_url( '/wp/v2/'.$rest_bases[$type].'/?'.$taxonomy.'='.$term->term_id),
+							'rest'=>rest_url( '/wp/v2/'.$rest_bases[$type].'/?'.$taxonomy.'='.$term->term_id.'&lang='.$lang),
 							'post'=>$type,
 							'type'=>'archive',
 							'taxonomy'=>$taxonomy,
@@ -266,7 +279,7 @@ class Initial_LoadData {
 			'paging' => $this->get_total_pages(),
       'homepage' => is_front_page(),
       'homelink' => $home,
-      'lang' => apply_filters('wpgurus_theme_current_language',get_locale())
+      'lang' => apply_filters('wpgurus_theme_current_language',$this->get_lang())
 		) ;
 		// global $wp;
     // $custom_data = array();
@@ -315,5 +328,17 @@ class Initial_LoadData {
 		}
 
 		return intval( $GLOBALS['wp_query']->max_num_pages );
+	}
+	/**
+	*  Return the language code
+	*
+	*@since 0.9
+	*@return string language code
+	*/
+	public function get_lang(){
+		$lang = explode('_',get_locale());
+		$lang = $lang[0];
+		if(function_exists('pll_current_language')) $lang = pll_current_language();
+		return $lang;
 	}
 }
