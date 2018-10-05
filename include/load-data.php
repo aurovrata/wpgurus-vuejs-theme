@@ -73,6 +73,7 @@ class Initial_LoadData {
 				$paths = array();
 				foreach($apis as $api_data){
 					$path = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					if(empty($path)) continue;
 					if(false === strpos($path, 'lang=')){
 						if(false === strpos($path, '?') ) $path .='?lang='.$lang;
 						else $path .='&lang='.$lang;
@@ -86,6 +87,7 @@ class Initial_LoadData {
 				$paths = array();
 				foreach($apis as $api_data){
 					$path = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					if(empty($path)) continue;
 					if(false === strpos($path, 'lang=')){
 						if(false === strpos($path, '?') ) $path .='?lang='.$lang;
 						else $path .='&lang='.$lang;
