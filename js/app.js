@@ -250,16 +250,18 @@ const pageComponent = function(){
         //set the current page request rest path to the first index of an array of Promises.
         let arrPromises = [this.$http.get(restpath)];
         let rIdx =0;
+        let pageSlug='';
         //if a menu is requested, set its request rest path to the next index in the array.
         if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
           rIdx++;
           let getpath = WPrestPath.languages;
           if(path !== home){ //inner page request/
             let slugs = this.$route.path.split('/');
-            let pageSlug = slugs[slugs.length-1];
+            pageSlug = slugs[slugs.length-1];
             if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
             getpath = WPrestPath.languages+pageSlug;
           }
+          if(wpGurusVueJSlocal.debug) console.log('translate page: '+getpath);
           arrPromises[rIdx]=this.$http.get(getpath);
         }
         //extra custom request: if any set each extra request path to subsequent indexes in teh array.
@@ -284,7 +286,17 @@ const pageComponent = function(){
           //language menus for new page.
           if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
             rIdx++;
-            componentData.menus.languages = data[rIdx].body;
+            let translations = data[rIdx].body;
+            if(home == data[rIdx].body[componentData.lang].url && pageSlug.length>0
+              && componentData.archive && !componentData.istax){
+              //this is an archive page for which polylang does not have a translation.
+              if(wpGurusVueJSlocal.debug) console.log('translated pages: ');
+              for(let lng in translations ){
+                translations[lng].url += pageSlug+'/';
+                if(wpGurusVueJSlocal.debug) console.log(translations[lng].url);
+              }
+            }
+            componentData.menus.languages = translations;
           }
           //extra custom request.
           componentData.custom={};
