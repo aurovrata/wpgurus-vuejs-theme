@@ -223,8 +223,9 @@ const pageComponent = function(){
       if(wpGurusVueJSlocal.debug) console.log('Route path:'+this.$route.path);
       componentData.posts=[];//reset;
       //get rest data.
+      let restRequest='';
       if('undefined' != typeof VueCustomRoutes.vues[this.$route.path]){
-        let restRequest = VueCustomRoutes.vues[this.$route.path];
+        restRequest = VueCustomRoutes.vues[this.$route.path];
         let restpath = restRequest.rest;
         componentData.type = restRequest.post;
         componentData.archive = false;
@@ -260,6 +261,17 @@ const pageComponent = function(){
             pageSlug = slugs[slugs.length-1];
             if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
             getpath = WPrestPath.languages+pageSlug;
+          }
+          switch(true){
+            case componentData.istax:
+              getpath = WPrestPath.languages+componentData.term+'?tax='+componentData.taxonomy;
+              break;
+            case componentData.archive:
+              getpath += '?archive='+componentData.type;
+              break;
+            case componentData.single:
+              getpath += '?ptype='+componentData.type;
+              break;
           }
           if(wpGurusVueJSlocal.debug) console.log('translate page: '+getpath);
           arrPromises[rIdx]=this.$http.get(getpath);

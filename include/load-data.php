@@ -199,7 +199,7 @@ class Initial_LoadData {
 				    'hide_empty' => false,
 					) );
 					foreach($terms as $term){
-						$route = str_replace($root,'/', get_term_link($term));
+						$route = str_replace($root,'/', get_term_link($term, $taxonomy));
 						$data_pages[$route] = array(
 							'rest'=>rest_url( '/wp/v2/'.$rest_bases[$type].'/?'.$taxonomy.'='.$term->term_id.'&lang='.$lang),
 							'post'=>$type,
