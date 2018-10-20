@@ -114,6 +114,7 @@ function filter_polylang_home_url($url){
   }
   return $url;
 }
+
 /**
 * setup the current page request translated permalinks.
 *
