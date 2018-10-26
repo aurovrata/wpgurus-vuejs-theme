@@ -215,7 +215,13 @@ class Initial_LoadData {
             //let user add additional routes.
             $apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
     				foreach($apis as $api_data){
-    					$paths[$api_data] = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+    					$path = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+              if(empty($path)) continue;
+    					if(false === strpos($path, 'lang=')){
+    						if(false === strpos($path, '?') ) $path .='?lang='.$lang;
+    						else $path .='&lang='.$lang;
+    					}
+              $paths[$api_data] = $path;
     				}
             $data[$route] = $paths;
 					}
