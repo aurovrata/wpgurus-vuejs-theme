@@ -230,8 +230,8 @@ class Initial_LoadData {
     }
 
     return \wp_json_encode(array(
-			'routes'=>$data, //custom extra rest requests.
-			'vues'=>$data_pages //default url_path=>rest_path Vue JS routes.
+			'routes'=>apply_filters('wpgurus_theme_vuejs_custom_routes', $data), //custom extra rest requests.
+			'vues'=>apply_filters('wpgurus_theme_vuejs_routes', $data_pages) //default url_path=>rest_path Vue JS routes.
 		));
   }
 	public function add_json_rest_path(){
@@ -287,7 +287,8 @@ class Initial_LoadData {
 			'paging' => $this->get_total_pages(),
       'homepage' => is_front_page(),
       'homelink' => $home,
-      'lang' => apply_filters('wpgurus_theme_current_language',$this->get_lang())
+      'lang' => apply_filters('wpgurus_theme_current_language',$this->get_lang()),
+      'initime' => time()
 		) ;
     return wp_json_encode($data);
 	}
