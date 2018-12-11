@@ -47,7 +47,7 @@ class Initial_LoadData {
 	 */
 	public function print_data() {
 		$data = sprintf(
-			'var InitialPage = %s;'.PHP_EOL.'const WPrestPath = %s;'.PHP_EOL.'const VueCustomRoutes = %s;',
+			'const InitialPage = %s;'.PHP_EOL.'const WPrestPath = %s;'.PHP_EOL.'const VueCustomRoutes = %s;',
 			$this->add_json_data(),
       $this->add_json_rest_path(),
       $this->add_json_routes()

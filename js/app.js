@@ -6,30 +6,27 @@
    - SitePaths : some site url paths, used to distinguish between localhost and domain based isntallations.
 */
 
-var isHomepage = InitialPage.homepage;
-var restRequest = WPrestPath.current; //track the rest request path when a menu is clicked.
-var postType = InitialPage.type;
-var isArchive = InitialPage.archive;
-var isSingle = InitialPage.single;
-var isTaxonomy = false;
-var mainVue = document.getElementById('main-vue');
-var pageTime = Date.now();
-var validTime = 60*60*1000; //1 hour.
+let isHomepage = InitialPage.homepage;
+let restRequest = WPrestPath.current; //track the rest requst path when a menu is clicked.
+let postType = InitialPage.type;
+let isArchive = InitialPage.archive;
+let isSingle = InitialPage.single;
+let isTaxonomy = false;
 //strip trailing slash.
-var initialLink = SitePaths.root.replace(/\/$/, "") + SitePaths.currentRoute;//.replace(/\/$/, "");
+const initialLink = SitePaths.root.replace(/\/$/, "") + SitePaths.currentRoute;//.replace(/\/$/, "");
 // if(wpGurusVueJSlocal.debug) console.log('initialLink:'+initialLink);
 // if(wpGurusVueJSlocal.debug) console.log('initialRest:'+restRequest);
 //declare an event bus (https://alligator.io/vuejs/global-event-bus/).
-var eventQ = new Vue();
+const eventQ = new Vue();
 // main content component.
 
-var wpArchive = function(templateId){
+const wpArchive = function(templateId){
   return{
     template: templateId,
     props:['post'],
   }
 }
-var rootPath = '/';
+let rootPath = '/';
 if(SitePaths.home.length > SitePaths.root.length){
   rootPath = SitePaths.home.replace(SitePaths.root,'/');
 }
@@ -47,7 +44,7 @@ var vueJSmenuMethodsModule = (function (vmmm) {
     return item.object+'s/'+item.object_id;
   }
   vmmm.itemClass = function(item){
-    var classes = 'menu-item';
+    let classes = 'menu-item';
     if(item.url === document.location){
       classes += ' menu-selected';
     }
@@ -63,7 +60,7 @@ var vueJSmenuComputedModule = (function (vmcm) {
 	return vmcm;
 }(vueJSmenuComputedModule || {}));
 
-var vjsMenu = function(type){
+const vjsMenu = function(type){
   if('undefined' == typeof type) type = 'primary';
   if('undefined' == typeof InitialMenu[type]){
     return null;
@@ -76,13 +73,13 @@ var vjsMenu = function(type){
   } //end component.
 }
 //get initial menu data.
-var initMenu = function(type){
+const initMenu = function(type){
   if('undefined' == typeof InitialMenu[type]){
     return null;
   }
   return InitialMenu[type]
 }
-var vjsLang = function(){
+const vjsLang = function(){
   if('undefined' == typeof InitialMenu['languages']){
     return null;
   }
@@ -93,14 +90,14 @@ var vjsLang = function(){
 }
 
 //setup menu components and routes.
-var routes = [];//VueCustomRoutes.routes;
+const routes = [];//VueCustomRoutes.routes;
 //custom reactive data.
 var customReactiveData = (function (crd){
   //add something
   return crd;
 }(customReactiveData || {}));
 
-var componentData = {
+const componentData = {
   'status':'',
   'menus':{
     'primary': initMenu('primary'),
@@ -148,7 +145,7 @@ var vueJSlogoComputedModule = (function (vlcm) {
 	return vlcm;
 }(vueJSlogoComputedModule || {}));
 
-var compLogo = {
+const compLogo = {
   template:'#logo-image',
   props:['logo'],
   methods: vueJSlogoMethodsModule,
@@ -187,7 +184,7 @@ var vueJSmethodsModule = (function (vmm) {
     }else return false;
   }
   vmm.hasMenu = function(type){
-    var menu = true;
+    let menu = true;
     if('undefined' == typeof this.data.menus[type]){
       menu = false;
     }
@@ -202,7 +199,7 @@ var vueJSmethodsModule = (function (vmm) {
 	return vmm;
 }(vueJSmethodsModule || {}));
 
-var pageComponent = function(){
+const pageComponent = function(){
   return Vue.component('body-content',{
     template: '#body-content',
     components:{
@@ -221,16 +218,15 @@ var pageComponent = function(){
     computed:vueJScomputedModule,
     methods: vueJSmethodsModule,
     created: function(){
-      if(Date.now() > pageTime+(validTime) ) this.$router.go(0);
-      pageTime = Date.now();
-      var path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
-      var home = SitePaths.home;
+      let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
+      let home = SitePaths.home;
       if(wpGurusVueJSlocal.debug) console.log('Route path:'+this.$route.path);
+      componentData.posts=[];//reset;
       //get rest data.
-      var restRequest='';
+      let restRequest='';
       if('undefined' != typeof VueCustomRoutes.vues[this.$route.path]){
         restRequest = VueCustomRoutes.vues[this.$route.path];
-        var restpath = restRequest.rest;
+        let restpath = restRequest.rest;
         componentData.type = restRequest.post;
         componentData.archive = false;
         componentData.single = false;
@@ -250,19 +246,18 @@ var pageComponent = function(){
         }
         componentData.term = '';
         if('undefined' != typeof restRequest.term) componentData.term = restRequest.term;
-        componentData.posts=[];//reset;
-        mainVue.setAttribute("style", "min-height:100vh;");
+
         if(wpGurusVueJSlocal.debug) console.log('Vue rest request: '+restpath);
         //set the current page request rest path to the first index of an array of Promises.
-        var arrPromises = [this.$http.get(restpath)];
-        var rIdx =0;
-        var pageSlug='';
+        let arrPromises = [this.$http.get(restpath)];
+        let rIdx =0;
+        let pageSlug='';
         //if a menu is requested, set its request rest path to the next index in the array.
         if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
           rIdx++;
-          var getpath = WPrestPath.languages;
+          let getpath = WPrestPath.languages;
           if(path !== home){ //inner page request/
-            var slugs = this.$route.path.split('/');
+            let slugs = this.$route.path.split('/');
             pageSlug = slugs[slugs.length-1];
             if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
             getpath = WPrestPath.languages+pageSlug;
@@ -284,10 +279,9 @@ var pageComponent = function(){
         //extra custom request: if any set each extra request path to subsequent indexes in teh array.
         if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
           if(wpGurusVueJSlocal.debug) console.log('found extra rest resquest:');
-          var key;
-          for(key in VueCustomRoutes.routes[this.$route.path]){
+          for(let key in VueCustomRoutes.routes[this.$route.path]){
             rIdx++;
-            var path = VueCustomRoutes.routes[this.$route.path][key];
+            let path = VueCustomRoutes.routes[this.$route.path][key];
             arrPromises[rIdx] = this.$http.get(path)
             if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes[this.$route.path][key]);
           }
@@ -300,18 +294,16 @@ var pageComponent = function(){
           }else{
             componentData.posts = [data[rIdx].body];
           }
-          mainVue.setAttribute("style", "");
           componentData.homepage = (path === home);
           //language menus for new page.
           if('undefined' != typeof InitialMenu['languages'] && 'undefined' != typeof WPrestPath['languages'] ){
             rIdx++;
-            var translations = data[rIdx].body;
+            let translations = data[rIdx].body;
             if(home == data[rIdx].body[componentData.lang].url && pageSlug.length>0
               && componentData.archive && !componentData.istax){
               //this is an archive page for which polylang does not have a translation.
               if(wpGurusVueJSlocal.debug) console.log('translated pages: ');
-              var lng;
-              for(lng in translations ){
+              for(let lng in translations ){
                 translations[lng].url += pageSlug+'/';
                 if(wpGurusVueJSlocal.debug) console.log(translations[lng].url);
               }
@@ -321,8 +313,7 @@ var pageComponent = function(){
           //extra custom request.
           componentData.custom={};
           if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
-            var key;
-            for(key in VueCustomRoutes.routes[this.$route.path]){
+            for(let key in VueCustomRoutes.routes[this.$route.path]){
               rIdx++;
               componentData.custom[key] = data[rIdx].body;
               if(wpGurusVueJSlocal.debug) console.log('added custom data: '+key);
@@ -335,17 +326,16 @@ var pageComponent = function(){
           if(wpGurusVueJSlocal.debug) console.log(data);
           this.status = { error: "failed to load the page"};
         });
-      }else{//end if rest request found.  TODO: handle error.
-        if(wpGurusVueJSlocal.debug) console.log("Page not found in Vue routes.");
-      }
+      }//end if rest request found.  TODO: handle error.
+
     },
     updated: function(){
       //remove any inner styles.
       Array.from(document.getElementsByClassName("wpgurus-inner-styles")).forEach(element => element.remove());
       //inline styles if any.
       if(this.data.posts.length > 0 && 'undefined' != typeof this.data.posts[0].wg_inline_style && this.data.single){
-        var elId, style, sid;
-        for(sid in this.data.posts[0].wg_inline_style){
+        var elId, style;
+        for(let sid in this.data.posts[0].wg_inline_style){
           elId = 'wpgurus-inline-style-' + sid;
           if(sid.length>1) elId = sid;
           style = document.getElementById(elId);
@@ -360,7 +350,7 @@ var pageComponent = function(){
       }
 
       //trigger an update on the page body.
-      var event = new CustomEvent("wpgurus-vuejs-updated", {
+      let event = new CustomEvent("wpgurus-vuejs-updated", {
       		detail: {
       			message: "Mounted VueJs",
       			time: new Date(),
@@ -377,13 +367,12 @@ var pageComponent = function(){
 
 
 //setup menu routes.
-var getRoutes = function(menu, vuec){
+const getRoutes = function(menu, vuec){
   if('undefined' == typeof InitialMenu[menu]){
     return;
   }
   if(InitialMenu.enabled && InitialMenu[menu].items.length > 0){
-    var idx;
-    for(idx = 0; idx< InitialMenu[menu].items.length; idx++){
+    for(let idx = 0; idx< InitialMenu[menu].items.length; idx++){
       if('undefined' !== typeof InitialMenu[menu].items[idx].isvjslink && InitialMenu[menu].items[idx].isvjslink){
         routes[routes.length] = {
           path: InitialMenu[menu].items[idx].url.replace(SitePaths.root, '/'),
@@ -396,14 +385,13 @@ var getRoutes = function(menu, vuec){
 if(wpGurusVueJSlocal.debug) console.log('Custom routes:');
 if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes);
 //setup routes and components.
-var bodyComponent = pageComponent(VueCustomRoutes.routes);
+const bodyComponent = pageComponent(VueCustomRoutes.routes);
 routes[routes.length]={
   path:rootPath,
   component: bodyComponent
 }
 //setup pages/posts.
-var key;
-for(key in VueCustomRoutes.vues){
+for(let key in VueCustomRoutes.vues){
   routes[routes.length]={
     path:key,
     component:bodyComponent
@@ -414,13 +402,13 @@ for(key in VueCustomRoutes.vues){
 //getRoutes('network', bodyComponent);
 if(wpGurusVueJSlocal.debug) console.log('page routes');
 if(wpGurusVueJSlocal.debug) console.log(routes);
-var router  = new VueRouter({
+const router  = new VueRouter({
   routes: routes,
   mode:'history'
 });
-// var setRoutesComponent = function(path){
+// const setRoutesComponent = function(path){
 //   router.push
 // }
-var mv = new Vue({
+const mv = new Vue({
   router: router
 }).$mount('#main-vue');
