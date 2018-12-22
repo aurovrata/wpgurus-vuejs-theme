@@ -55,13 +55,13 @@ function wpgurus_enqueue_styles() {
 }
 //function to include vuejs templates.
 function include_vue_template($id, $component, $page='index' ){
-  switch($component){
-    case 'menu':
-      if(!has_nav_menu($id)){
-        return;
-      }
-      break;
-  }
+  // switch($component){
+  //   case 'menu':
+  //     if(!has_nav_menu($id)){
+  //       return;
+  //     }
+  //     break;
+  // }
   set_query_var('template_id', $id);
   get_template_part('templates/'.$page, $component);
   return;

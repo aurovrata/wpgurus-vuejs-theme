@@ -6,12 +6,6 @@
    - SitePaths : some site url paths, used to distinguish between localhost and domain based isntallations.
 */
 
-let isHomepage = InitialPage.homepage;
-let restRequest = WPrestPath.current; //track the rest requst path when a menu is clicked.
-let postType = InitialPage.type;
-let isArchive = InitialPage.archive;
-let isSingle = InitialPage.single;
-let isTaxonomy = false;
 //strip trailing slash.
 const initialLink = SitePaths.root.replace(/\/$/, "") + SitePaths.currentRoute;//.replace(/\/$/, "");
 // if(wpGurusVueJSlocal.debug) console.log('initialLink:'+initialLink);
@@ -115,11 +109,11 @@ const componentData = {
   },
   'posts':[],
   'homepage':false,
-  'rest':restRequest,
-  'type':postType,
-  'single':isSingle,
-  'archive':isArchive,
-  'istax':isTaxonomy,
+  'rest':WPrestPath.current,
+  'type':InitialPage.type,
+  'single':InitialPage.single,
+  'archive':InitialPage.archive,
+  'istax':false,
   'taxonomy':'',
   'term':'',
   'lang':'en',
@@ -130,6 +124,11 @@ const componentData = {
 if('undefined' != typeof InitialMenu['languages']){
   componentData.lang = InitialPage.lang;
 }
+/** @since 1.1.0 default handling of 404 pages, set content to simple message.
+* If a plugin is handling 404 pages, this is take care on ocmponent update  cycle.
+*/
+if(InitialPage.is404) componentData.posts[0]=InitialPage.content404;
+
 /*
 logo component vuejs methods functions.
 */
@@ -220,13 +219,19 @@ const pageComponent = function(){
     created: function(){
       let path = SitePaths.root.replace(/\/$/, "") + this.$route.path;
       let home = SitePaths.home;
+
       if(wpGurusVueJSlocal.debug) console.log('Route path:'+this.$route.path);
-      componentData.posts=[];//reset;
       //get rest data.
       let restRequest='';
-      if('undefined' != typeof VueCustomRoutes.vues[this.$route.path]){
-        restRequest = VueCustomRoutes.vues[this.$route.path];
+      let routePath = this.$route.path
+      /** @since 1.1.0 handle 404 pages*/
+      let is404 = (InitialPage.is404 && SitePaths.currentRoute == routePath);
+
+      if('undefined' != typeof VueCustomRoutes.vues[routePath] && is404 && InitialPage.page404>0 ){
+        componentData.posts=[];//reset;
+        restRequest = VueCustomRoutes.vues[routePath];
         let restpath = restRequest.rest;
+        if(is404 && InitialPage.page404>0) restpath = WPrestPath.current;
         componentData.type = restRequest.post;
         componentData.archive = false;
         componentData.single = false;
@@ -257,7 +262,7 @@ const pageComponent = function(){
           rIdx++;
           let getpath = WPrestPath.languages;
           if(path !== home){ //inner page request/
-            let slugs = this.$route.path.split('/');
+            let slugs = routePath.split('/');
             pageSlug = slugs[slugs.length-1];
             if(0==pageSlug.length) pageSlug = slugs[slugs.length-2];
             getpath = WPrestPath.languages+pageSlug;
@@ -277,15 +282,16 @@ const pageComponent = function(){
           arrPromises[rIdx]=this.$http.get(getpath);
         }
         //extra custom request: if any set each extra request path to subsequent indexes in teh array.
-        if('undefined' != typeof VueCustomRoutes.routes[this.$route.path]){
+        if('undefined' != typeof VueCustomRoutes.routes[routePath]){
           if(wpGurusVueJSlocal.debug) console.log('found extra rest resquest:');
-          for(let key in VueCustomRoutes.routes[this.$route.path]){
+          for(let key in VueCustomRoutes.routes[routePath]){
             rIdx++;
-            let path = VueCustomRoutes.routes[this.$route.path][key];
+            let path = VueCustomRoutes.routes[routePath][key];
             arrPromises[rIdx] = this.$http.get(path)
-            if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes[this.$route.path][key]);
+            if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes[routePath][key]);
           }
         }
+
         //now we wait until all request rest paths have been returned through out Proise object.
         Promise.all(arrPromises).then( (data) => {
           rIdx = 0;
@@ -325,9 +331,9 @@ const pageComponent = function(){
           if(wpGurusVueJSlocal.debug) console.log('ERROR,failed to get api data');
           if(wpGurusVueJSlocal.debug) console.log(data);
           this.status = { error: "failed to load the page"};
+          //if('404'==data.status) componentData.posts[0] = InitialPage.content404;
         });
-      }//end if rest request found.  TODO: handle error.
-
+      }
     },
     updated: function(){
       //remove any inner styles.

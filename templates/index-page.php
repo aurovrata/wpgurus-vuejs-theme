@@ -1,9 +1,6 @@
 <?php
 //vue js templates
 ?>
-<template id="content-page">
-  <section class="bg-white mt-px10 pb-px200">
-    <slot v-if="isPage" name="page"></slot>
-    <slot v-else name="default"></slot>
-  </section>
-</template>
+<article v-if="data.posts.length>0" v-bind:id="articleId(data.posts[0])">
+      <div v-html="data.posts[0].content.rendered"></div>
+</article>

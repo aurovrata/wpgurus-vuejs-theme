@@ -18,6 +18,7 @@ class Initial_LoadData {
 		add_filter( 'wp_enqueue_scripts', array( $this, 'print_data' ) );
     //add_filter( 'posts_request', array($this, 'bail_main_wp_query'), 10, 2 );
 	}
+
   public function bail_main_wp_query( $sql, $wpQuery ) {
     if ( $wpQuery->is_main_query() ) {
         /* prevent SELECT FOUND_ROWS() query*/
@@ -228,7 +229,23 @@ class Initial_LoadData {
         }
       }
     }
+		/** @since 1.1.0 if current page is 404, stick it in the routes*/
+		$page404id = get_option( '404page_page_id', 0 );
+		$page404id = apply_filters('wpgurus_404_page_id', $page404id);
+		$is404 = is_404();
+		if( !empty($GLOBALS['wp_query']->posts) && $page404id == $GLOBALS['wp_query']->posts[0]->ID ){
+			$is404 = true;
+		}
+		if($is404){ //add to routes for vuejs to load.
+			$route = $_SERVER['REQUEST_URI'];
+			$data_pages[$route] = array(
+				'rest'=> '',
+				'post'=>'page',
+				'type'=>'single'
+			);
+		}
 
+		/*const VueCustomRoutes*/
     return \wp_json_encode(array(
 			'routes'=>apply_filters('wpgurus_theme_vuejs_custom_routes', $data), //custom extra rest requests.
 			'vues'=>apply_filters('wpgurus_theme_vuejs_routes', $data_pages) //default url_path=>rest_path Vue JS routes.
@@ -258,7 +275,7 @@ class Initial_LoadData {
 			if(is_single() || is_page()) $rest = $rest.'/'.$GLOBALS['wp_query']->posts[0]->ID;
 			$current = rest_url('/wp/v2/'.$rest);
 		}
-		//debug_msg($obj, $post_type);
+		/* const WPrestPath */
 		return \wp_json_encode(array(
 			'root'=> $root,
 			'menu' => rest_url('/wp-api-menus/v2/menus/'),
@@ -280,16 +297,31 @@ class Initial_LoadData {
     $page_id = get_option('page_on_front');
     if($page_id>0) $home=array('type'=>'post_type', 'object'=>'page');
     else $home=array('type'=>'post_type_archive', 'object'=>'post');
+		/** @since 1.1.0 handle 404page plugin*/
+		$page404id = get_option( '404page_page_id', 0 );
+		$is404 = is_404();
+		if($page404id > 0){
+			$is404 = true;
+		}
+
     $data =  array(
 			'single' => is_single(),
 			'archive'=> is_archive() || is_home(),
-			'type'=> $post_type ,
+			'type'=> $is404?'page':$post_type ,
 			'paging' => $this->get_total_pages(),
       'homepage' => is_front_page(),
       'homelink' => $home,
       'lang' => apply_filters('wpgurus_theme_current_language',$this->get_lang()),
-      'initime' => time()
+      'initime' => time(),
+			'is404' => $is404,
+			'content404'=> apply_filters('wpgurus_404_page_html_content',
+																		array(
+																			'title'=>array('rendered'=>'<h1>Page Not Found (404)</h1>'),
+																			'content'=>array('rendered'=>'<p>This page does not exists</p>')
+																		)),
+			'page404'=>$page404id,
 		) ;
+		/*const InitialPage*/
     return wp_json_encode($data);
 	}
 
