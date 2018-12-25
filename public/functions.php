@@ -284,7 +284,11 @@ function add_language_menu_to_api($request) {
 function remove_archive_language_menus($results){
   if(is_array($results) && count($results)>1){
     foreach($results as &$post){
-      if(isset($post['language_menu'])) unset($post['language_menu']);
+      if(isset($post['language_menu'])){
+        unset($post['language_menu']);
+        debug_msg($results, 'language_menu results ');
+
+      }
     }
   }
   return $results;

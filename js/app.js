@@ -227,7 +227,7 @@ const pageComponent = function(){
       /** @since 1.1.0 handle 404 pages*/
       let is404 = (InitialPage.is404 && SitePaths.currentRoute == routePath);
 
-      if('undefined' != typeof VueCustomRoutes.vues[routePath] && is404 && InitialPage.page404>0 ){
+      if('undefined' != typeof VueCustomRoutes.vues[routePath]){
         componentData.posts=[];//reset;
         restRequest = VueCustomRoutes.vues[routePath];
         let restpath = restRequest.rest;
