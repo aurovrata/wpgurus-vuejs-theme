@@ -223,14 +223,14 @@ const pageComponent = function(){
       if(wpGurusVueJSlocal.debug) console.log('Route path:'+this.$route.path);
       //get rest data.
       let restRequest='';
-      let routePath = this.$route.path
+      let restpath, routePath = this.$route.path
       /** @since 1.1.0 handle 404 pages*/
       let is404 = (InitialPage.is404 && SitePaths.currentRoute == routePath);
 
       if('undefined' != typeof VueCustomRoutes.vues[routePath]){
         componentData.posts=[];//reset;
         restRequest = VueCustomRoutes.vues[routePath];
-        let restpath = restRequest.rest;
+        restpath = restRequest.rest;
         if(is404 && InitialPage.page404>0) restpath = WPrestPath.current;
         componentData.type = restRequest.post;
         componentData.archive = false;

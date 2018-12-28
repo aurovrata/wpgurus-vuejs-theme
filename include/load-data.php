@@ -300,7 +300,7 @@ class Initial_LoadData {
 		/** @since 1.1.0 handle 404page plugin*/
 		$page404id = get_option( '404page_page_id', 0 );
 		$is404 = is_404();
-		if($page404id > 0){
+		if( !empty($GLOBALS['wp_query']->posts) && $page404id == $GLOBALS['wp_query']->posts[0]->ID ){
 			$is404 = true;
 		}
 
