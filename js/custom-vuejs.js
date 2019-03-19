@@ -16,10 +16,20 @@ main content component vuejs methods functions.
 */
 var vueJSmethodsModule = (function (vmm) {
 	// add capabilities...
-	// vmm.articleId = function(post){
-  //   return 'post-'+post.id;
+  // vmm.whichContent = function(){
+  //   let component = '#single-page';
+  //   switch(true){
+  //     case vmm.isPage():
+  //     case vmm.isSingle():
+  //       component = '#single-page';
+  //       break;
+  //     case vmm.isArchive():
+  //       component = '#archive-page';
+  //       break;
+  //   }
+  //   return component;
   // }
-	return vmm;
+  return vmm;
 }(vueJSmethodsModule || {}));
 /*
 logo component vuejs methods functions.
@@ -50,6 +60,24 @@ var vueJSmenuComputedModule = (function (vmcm) {
 	return vmcm;
 }(vueJSmenuComputedModule || {}));
 /*
+Computed methods for main vue component.
+*/
+var vueJScomputedModule = (function (vcm) {
+	// add capabilities...
+	// vcm.filteredSearch = function(){ //filter archive posts
+	// 	if(this.data.form.header.search.length>0){
+	// 		let filtered = [];
+	// 		let regex = new RegExp(this.data.form.header.search,'gi');
+	// 		for(let idx in this.data.posts){
+	// 			let post = this.data.posts[idx];
+	// 			if(post.title.rendered.match(regex)) filtered[filtered.length] = post;
+	// 		}
+	// 		return filtered;
+	// 	}else return this.data.posts;
+	// }
+	return vcm;
+}(vueJScomputedModule || {}));
+/*
 custom reactive data for forms
 any data added here will be appended to the data.form element of the main vuejs component.
 */
@@ -64,3 +92,19 @@ var customReactiveData = (function (crd){
   // };
   return crd;
 }(customReactiveData || {}));
+
+/*
+main content component vuejs methods functions.
+*/
+var vueJSmethodsModule = (function (vmm) {
+	// add capabilities...
+	// vmm.selectButton = function(index){ //dynamically show a button
+  //   let buttons = document.getElementsByClassName('accomodation-button');
+  //   for(let i = 0; i<buttons.length; i++){
+  //     buttons[i].style.display = 'none';
+  //   }
+  //   document.getElementById('booking-button-'+index).style.display = 'block';
+  // }
+
+	return vmm;
+}(vueJSmethodsModule || {}));

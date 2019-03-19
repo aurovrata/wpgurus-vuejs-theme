@@ -13,7 +13,7 @@ class Initial_LoadMenu {
 	 * Set up actions
 	 */
 	public function __construct() {
-		add_filter( 'wp_enqueue_scripts', array( $this, 'print_data' ) );
+		add_filter( 'wp_enqueue_scripts', array( $this, 'print_data' ),20 );
 	}
 
 	/**
@@ -30,9 +30,9 @@ class Initial_LoadMenu {
   function add_json_paths(){
 		$domain_url = wpgurus_domain_url();
 		$paths = array(
-      'home' => apply_filters('wpgurus_theme_home_url',home_url()),
+      'home' => trailingslashit( apply_filters('wpgurus_theme_home_url',home_url()) ),
 			'root' => $domain_url, //public/functions.php
-      'logo' => apply_filters('wpgurus_theme_logo', get_stylesheet_directory_uri().'/images/icons.svg'), //TODO: make dynamic.
+      'logo' => apply_filters('wpgurus_theme_logo', get_template_directory_uri().'/images/icons.svg'), //TODO: make dynamic.
       'currentRoute'=> wp_unslash($_SERVER['REQUEST_URI'])
 		);
 		$others = apply_filters('wpgurus_themes_add_sitepaths', array());
@@ -46,12 +46,16 @@ class Initial_LoadMenu {
 	 */
 	public function add_json_data() {
     $menus = apply_filters('wpgurus_theme_vuejs_menu', get_nav_menu_locations());
-    $data = array('enabled' => class_exists( 'WP_REST_Menus' ));
+    $data = array('enabled' => true);
+    if(!class_exists( 'WP_REST_Menus' )){
+      $data = array(
+        'enabled' => false,
+        'error' => 'Plugin WP REST API Menus needs to be <a href="'.admin_url('plugin-install.php?tab=plugin-information&plugin=wp-api-menus').'">installed</a> and activated'
+      );
+    }
     foreach($menus as $location=>$menu_id){
 			$menu_data = $this->get_menu_data($menu_id);
-			if(!empty($menu_data)){
-	      $data[$location] = $menu_data;
-			}
+	    $data[$location] = $menu_data;
     }
 		if(apply_filters('wpgurus_theme_multilingual', false)){
 			$languages = apply_filters('wpgurus_theme_language_menu', array());

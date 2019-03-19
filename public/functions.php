@@ -1,10 +1,13 @@
 <?php
+
 /* hooks*/
 add_action( 'wp_enqueue_scripts', 'wpgurus_enqueue_styles' );
 add_filter( 'body_class', 'wpgurus_clear_body_class',0,1);
 //add_action( 'wp_head', 'martinhal_landing_site_head');
 //modify the rest menus to inlcude the vuejs custom checkbox.
 add_action( 'rest_menus_format_menu_item', 'add_menu_rest_fields');
+add_action( 'rest_api_init', 'add_featured_image_urls_to_posts_pages' );
+
 if(defined("POLYLANG_VERSION")){ //filter the home url for translated pages.
   add_filter('wpgurus_theme_multilingual', '__return_true');
   add_filter('wpgurus_theme_home_url', 'filter_polylang_home_url');
@@ -15,13 +18,6 @@ if(defined("POLYLANG_VERSION")){ //filter the home url for translated pages.
   add_action( 'rest_api_init', 'add_language_menu_to_api' );
   add_filter('rest_pre_echo_response', 'remove_archive_language_menus');
 }
-
-//includes: load initial page data, saves an extra request by the vueJS controller.
-require_once plugin_dir_path(__DIR__).'include/load-data.php';
-new Initial_LoadData();
-//inlcudes: load initial data for menus.
-require_once plugin_dir_path(__DIR__).'include/load-menu.php';
-new Initial_LoadMenu();
 
 /*function */
 function wpgurus_clear_body_class( $classes ) {
@@ -53,19 +49,7 @@ function wpgurus_enqueue_styles() {
 
   wp_enqueue_style( WPGURUS_APP, $theme_folder . '/css/main.css', array() , WPGURUS_V2_VERSION,'all');
 }
-//function to include vuejs templates.
-function include_vue_template($id, $component, $page='index' ){
-  // switch($component){
-  //   case 'menu':
-  //     if(!has_nav_menu($id)){
-  //       return;
-  //     }
-  //     break;
-  // }
-  set_query_var('template_id', $id);
-  get_template_part('templates/'.$page, $component);
-  return;
-}
+
 /**
 * This is hooked to 'rest_menus_format_menu_item', a filter from wp-api-menus plugin which allows the menu link to be modified before it is sent to the rest request.
 *
@@ -292,4 +276,26 @@ function remove_archive_language_menus($results){
     }
   }
   return $results;
+}
+
+//add feathured image thumbnail to posts/pages.
+function add_featured_image_urls_to_posts_pages($object){
+  // register_rest_field ( 'name-of-post-type', 'name-of-field-to-return', array-of-callbacks-and-schema() )
+    register_rest_field( array('post','page'), 'featured_urls', array(
+        'get_callback'    => function($object){
+          //$sizes = get_intermediate_image_sizes();
+          //$sizes = array('thumbnail','medium', 'landing_header_large');
+          $tid = get_post_meta($object['id'], '_thumbnail_id', true);
+          $results = array('thumbnail'=>'', 'medium'=>'','large'=>'');
+          $results = apply_filters('wpgurus_theme_featured_image_sizes', $results);
+          if(!empty($tid)){
+            foreach($results as $size=>$value){
+              $results[$size] = wp_get_attachment_image_src($tid, $size);
+            }
+          }
+          return $results;
+        },
+        'schema'          => null,
+      )
+    );
 }

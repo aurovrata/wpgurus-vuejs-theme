@@ -62,3 +62,21 @@ nav a {
 .navigation-languages:hover .current-lang .raquo {
     transform: rotate(-90deg);
 }
+.single-page figure {
+    float: left;
+    max-width: 300px;
+}
+.archive-post article {
+    max-width: 23%;
+    float: left;
+    margin: 1%;
+    max-height: 240px;
+    overflow-y: hidden;
+}
+.archive-post figure {
+    float: left;
+    margin: 10px;
+}
+.archive-post h1 {
+    font-size: 1.2em;
+}

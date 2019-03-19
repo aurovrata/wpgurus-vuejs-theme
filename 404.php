@@ -1,6 +1,6 @@
 <?php
 /**
-* main index.
+* main index. page compatible with https://wordpress.org/plugins/404page/
 */
 get_header();
 ?>
@@ -34,9 +34,18 @@ get_header();
   if(apply_filters('wpgurus_theme_multilingual', false) || defined ("POLYLANG_VERSION")){
     include_vue_template('main', 'languages');
   }
-  include_vue_template('network', 'menu');
-  include_vue_template('footer', 'menu');
-  include_vue_template('primary', 'menu');
+  if ( has_nav_menu( 'network' ) ){
+    set_query_var('template_id', 'network');
+    get_template_part('templates/index', 'menu');
+  }
+  if ( has_nav_menu( 'footer' ) ){
+    set_query_var('template_id', 'footer');
+    get_template_part('templates/index', 'menu');
+  }
+  if ( has_nav_menu( 'primary' ) ){
+    set_query_var('template_id', 'primary');
+    get_template_part('templates/index', 'menu');
+  }
   get_template_part('templates/index', 'logo');
 
   ?>

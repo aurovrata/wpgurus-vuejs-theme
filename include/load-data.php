@@ -15,7 +15,8 @@ class Initial_LoadData {
 	 */
 	public function __construct() {
 		add_action( 'pre_get_posts', array( $this, 'unstick_stickies' ) );
-		add_filter( 'wp_enqueue_scripts', array( $this, 'print_data' ) );
+		add_filter( 'wp_enqueue_scripts', array( $this, 'print_data' ),20 );
+		//debug_msg('load data');
     //add_filter( 'posts_request', array($this, 'bail_main_wp_query'), 10, 2 );
 	}
 
@@ -169,6 +170,19 @@ class Initial_LoadData {
 					'post'=>$page->post_type,
 					'type'=>'single'
 				);
+				/** @since 2.0.0 add custom routes to pages too.*/
+				$apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
+				$paths = array();
+				foreach($apis as $api_data){
+					$path = apply_filters("wpgurus_theme_additional_api_path", '', $api_data);
+					if(empty($path)) continue;
+					if(false === strpos($path, 'lang=')){
+						if(false === strpos($path, '?') ) $path .='?lang='.$lang;
+						else $path .='&lang='.$lang;
+					}
+					$paths[$api_data] = $path;
+				}
+				$data[$route] = $paths;
       }
     }
 		//front page.
@@ -244,7 +258,12 @@ class Initial_LoadData {
 				'type'=>'single'
 			);
 		}
-
+    if(isset($data_pages['/m2/sagres/video-slider/'])){
+      $data_pages['/m2/sagres/video-slider/']['async']=true;
+    }
+    if(isset($data_pages['/w5/test-page/'])){
+      $data_pages['/w5/test-page/']['async']=true;
+    }
 		/*const VueCustomRoutes*/
     return \wp_json_encode(array(
 			'routes'=>apply_filters('wpgurus_theme_vuejs_custom_routes', $data), //custom extra rest requests.
