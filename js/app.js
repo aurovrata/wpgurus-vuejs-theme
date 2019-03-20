@@ -208,28 +208,10 @@ var vueJSmethodsModule = (function (vmm) {
     }
     return pclass;
   }
-  vmm.whichContent = function(){
-    let component = '#single-page';
-    switch(true){
-      case vmm.isPage():
-      case vmm.isSingle():
-        component = '#single-page';
-        break;
-      case vmm.isArchive():
-        component = '#archive-page';
-        break;
-    }
-    return component;
-  }
 	return vmm;
 }(vueJSmethodsModule || {}));
-var vueJSasyncMethodsModule = (function (vamm) {
-  vamm.printTitle = function(){
-    if('undefined' == typeof this.rootdata.posts[0]) return 'No Title';
-    return 'Title:'+this.rootdata.posts[0].title.rendered;
-  }
-  return vamm
-}(vueJSasyncMethodsModule || {}));
+//async component modules.
+var vueJSasyncMethodsModule = (function (vamm) { return vamm }(vueJSasyncMethodsModule || {}));
 var vueJSasyncComputedModule = (function (vacm) { return vacm}(vueJSasyncComputedModule || {}));
 
 const pageComponent = function(pageTemplate){
@@ -249,7 +231,6 @@ const pageComponent = function(pageTemplate){
       'logo-image': compLogo,
       'static-template':{
         template:'#static-template',
-        props:['rootdata'],
         computed:vueJScomputedModule,
         methods: vueJSmethodsModule
       },
@@ -484,18 +465,18 @@ router.beforeEach(function(to,from,next){
       req.send();
     }).then(function(data){
       let obj = JSON.parse(data);
+      let tpl = obj.content.rendered;
+      if(tpl.length==0) tpl='<em>Empty page</em>';
       router.addRoutes([{
         path: to.path,
-        component: pageComponent(obj.content.rendered, next)
+        component: pageComponent(tpl)
       }]);
     }).catch(function(err){
       console.log('Async route error:');
       console.log(err);
     });
   }
-    next();
-  //continue with router navigation.
-  //next();
+  next();
 });
 
 //mount vue.

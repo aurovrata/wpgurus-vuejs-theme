@@ -168,7 +168,8 @@ class Initial_LoadData {
         $data_pages[$route] = array(
 					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID.'?lang='.$lang),
 					'post'=>$page->post_type,
-					'type'=>'single'
+					'type'=>'single',
+          'async'=>apply_filters('wpgurus_themes_asynchronous_vvuejs_template', false, $page->slug, $page->post_type)
 				);
 				/** @since 2.0.0 add custom routes to pages too.*/
 				$apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
@@ -258,12 +259,6 @@ class Initial_LoadData {
 				'type'=>'single'
 			);
 		}
-    if(isset($data_pages['/m2/sagres/video-slider/'])){
-      $data_pages['/m2/sagres/video-slider/']['async']=true;
-    }
-    if(isset($data_pages['/w5/test-page/'])){
-      $data_pages['/w5/test-page/']['async']=true;
-    }
 		/*const VueCustomRoutes*/
     return \wp_json_encode(array(
 			'routes'=>apply_filters('wpgurus_theme_vuejs_custom_routes', $data), //custom extra rest requests.
