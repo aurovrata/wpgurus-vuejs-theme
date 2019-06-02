@@ -169,7 +169,8 @@ class Initial_LoadData {
 					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID.'?lang='.$lang),
 					'post'=>$page->post_type,
 					'type'=>'single',
-          'async'=>apply_filters('wpgurus_themes_asynchronous_vvuejs_template', false, $page->slug, $page->post_type)
+          'async'=> apply_filters('wpgurus_themes_asynchronous_vvuejs_template', false, $page->post_name, $page->post_type),
+          'script'=> apply_filters('wpgurus_themes_asynchronous_scripts', array(), $page->post_name, $page->post_type )
 				);
 				/** @since 2.0.0 add custom routes to pages too.*/
 				$apis = apply_filters("wpgurus_theme_additional_api_data", array(), $route);
@@ -221,7 +222,7 @@ class Initial_LoadData {
 							'post'=>$type,
 							'type'=>'archive',
 							'taxonomy'=>$taxonomy,
-							'term'=>$term->term_id
+							'term'=>$term->term_id,
 						);
 						//in addition add the custom route to this term.
 						$base = empty($tax_obj->rest_base) ? $taxonomy : $tax_obj->rest_base ;

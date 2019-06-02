@@ -322,6 +322,15 @@ const pageComponent = function(pageTemplate){
             if(wpGurusVueJSlocal.debug) console.log(VueCustomRoutes.routes[routePath][key]);
           }
         }
+        /** @since 2.1.0 enable asynchronous  scripts/css stylesheets*/
+        if('undefined' != typeof VueCustomRoutes.vues[routePath].script
+           && VueCustomRoutes.vues[routePath].script.length>0){
+          for(let key in VueCustomRoutes.vues[routePath].script){
+            rIdx++;
+            let path = VueCustomRoutes.vues[routePath].script[key];
+            arrPromises[rIdx] = this.$http.get(path);
+          }
+        }
         if(initError) return;
         //now we wait until all request rest paths have been returned through out Proise object.
         Promise.all(arrPromises).then( (data) => {
@@ -357,7 +366,28 @@ const pageComponent = function(pageTemplate){
               if(wpGurusVueJSlocal.debug) console.log(componentData.custom[key]);
             }
           }
-          this.data = componentData;
+          /** @since 2.1.0 enable asynchronous  scripts/css stylesheets*/
+          if('undefined' != typeof VueCustomRoutes.vues[routePath].script
+             && VueCustomRoutes.vues[routePath].script.length>0){
+            let head = document.getElementsByTagName('head')[0];
+            for(let key in VueCustomRoutes.vues[routePath].script){
+              rIdx++;
+              let script;
+              switch(key){
+                case 'css':
+                  script = document.createElement('style');
+                  script.type = 'text/css';
+                  script.appendChild(document.createTextNode(data[rIdx].body));
+                  break;
+                default:
+                  script = document.createElement('script');
+                  script.type = 'text/'+key;
+                  break;
+              }
+              head.appendChild(script);
+            }
+          }
+          this.data = componentData; /*setup the data*/
         }, (data) => {
           if(wpGurusVueJSlocal.debug) console.log('ERROR,failed to get api data');
           if(wpGurusVueJSlocal.debug) console.log(data);
@@ -433,7 +463,7 @@ if('undefined' == typeof VueCustomRoutes.vues[rootPath].async){
 const asyncVues = [];
 
 for(let key in VueCustomRoutes.vues){
-  if('undefined' != typeof VueCustomRoutes.vues[key].async){
+  if('undefined' != typeof VueCustomRoutes.vues[key].async && VueCustomRoutes.vues[key].async){
     asyncVues[key] = VueCustomRoutes.vues[key];
   }else{
     routes[routes.length]={
