@@ -3,8 +3,11 @@
 if ( ! defined( 'WPGURUS_APP' ) ) {
 	define( 'WPGURUS_APP', 'wpgurus-vue-theme' );
 }
+  if ( ! defined( 'WPGURUS_APP_CUSTOM' ) ) {
+  	define( 'WPGURUS_APP_CUSTOM', 'wpgurus-vue-custom' );
+  }
 if ( ! defined( 'WPGURUS_V2_VERSION' ) ) {
-	define( 'WPGURUS_V2_VERSION', '2.1.0' );
+	define( 'WPGURUS_V2_VERSION', '2.2.0' );
 }
 //dashboard modifications.
 require get_parent_theme_file_path().'/admin/dashboard.php';
