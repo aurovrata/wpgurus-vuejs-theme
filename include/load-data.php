@@ -169,7 +169,8 @@ class Initial_LoadData {
 					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID.'?lang='.$lang),
 					'post'=>$page->post_type,
 					'type'=>'single',
-          'async'=> apply_filters('wpgurus_themes_asynchronous_vvuejs_template', false, $page->post_name, $page->post_type),
+					'post'=>$page->ID,
+          'async'=> apply_filters('wpgurus_themes_asynchronous_vuejs_template', false, $page->post_name, $page->post_type),
           'script'=> apply_filters('wpgurus_themes_asynchronous_scripts', array(), $page->post_name, $page->post_type )
 				);
 				/** @since 2.0.0 add custom routes to pages too.*/

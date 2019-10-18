@@ -367,9 +367,13 @@ const pageComponent = function(pageTemplate){
             }
           }
           /** @since 2.1.0 enable asynchronous  scripts/css stylesheets*/
+          //remove prev asynchronous elements.
+          let head = document.getElementsByTagName('head')[0];
+          let asyncElms = head.getElementsByClassName('asynchronous-script');
+          for(let aIdx=0; aIdx < asyncElms.length;aIdx++) head.removeChild(asyncElms[aIdx]);
+
           if('undefined' != typeof VueCustomRoutes.vues[routePath].script
              && VueCustomRoutes.vues[routePath].script.length>0){
-            let head = document.getElementsByTagName('head')[0];
             for(let key in VueCustomRoutes.vues[routePath].script){
               rIdx++;
               let script;
@@ -384,6 +388,7 @@ const pageComponent = function(pageTemplate){
                   script.type = 'text/'+key;
                   break;
               }
+              script.class = 'asynchronous-script';
               head.appendChild(script);
             }
           }
@@ -431,7 +436,6 @@ const pageComponent = function(pageTemplate){
     }
   })
 }
-
 
 //setup menu routes.
 const getRoutes = function(menu, vuec){
