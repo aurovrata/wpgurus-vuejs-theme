@@ -169,7 +169,7 @@ class Initial_LoadData {
 					'rest'=> rest_url('/wp/v2/'.$rest_bases[$page->post_type].'/'.$page->ID.'?lang='.$lang),
 					'post'=>$page->post_type,
 					'type'=>'single',
-					'post'=>$page->ID,
+					'ID'=>$page->ID,
           'async'=> apply_filters('wpgurus_themes_asynchronous_vuejs_template', false, $page->post_name, $page->post_type),
           'script'=> apply_filters('wpgurus_themes_asynchronous_scripts', array(), $page->post_name, $page->post_type )
 				);
@@ -247,7 +247,9 @@ class Initial_LoadData {
       }
     }
 		/** @since 1.1.0 if current page is 404, stick it in the routes*/
-		$page404id = get_option( '404page_page_id', 0 );
+		$page404_settings = get_option( '404page_settings', array() );
+		$page404id = 0;
+		if(isset($page404_settings['page_id'])) $page404id = $page404_settings['page_id'];
 		$page404id = apply_filters('wpgurus_404_page_id', $page404id);
 		$is404 = is_404();
 		if( !empty($GLOBALS['wp_query']->posts) && $page404id == $GLOBALS['wp_query']->posts[0]->ID ){
@@ -314,7 +316,10 @@ class Initial_LoadData {
     if($page_id>0) $home=array('type'=>'post_type', 'object'=>'page');
     else $home=array('type'=>'post_type_archive', 'object'=>'post');
 		/** @since 1.1.0 handle 404page plugin*/
-		$page404id = get_option( '404page_page_id', 0 );
+		// $page404id = get_option( '404page_page_id', 0 );
+		$page404_settings = get_option( '404page_settings', array() );
+		$page404id = 0;
+		if(isset($page404_settings['page_id'])) $page404id = $page404_settings['page_id'];
 		$is404 = is_404();
 		if( !empty($GLOBALS['wp_query']->posts) && $page404id == $GLOBALS['wp_query']->posts[0]->ID ){
 			$is404 = true;

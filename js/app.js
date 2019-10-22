@@ -161,6 +161,9 @@ var vueJSmethodsModule = (function (vmm) {
     else return false;
   }
   vmm.isSingle = function(pType){
+    console.log('isSingle');
+    console.log(pType);
+    console.log(this.data.type);
     if(this.data.type==pType && this.data.single) return true;
     else if('undefined' == typeof pType && this.data.single) return true;
     else  return false;

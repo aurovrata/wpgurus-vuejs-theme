@@ -1,5 +1,4 @@
 <?php
-
 /* hooks*/
 add_action( 'wp_enqueue_scripts', 'wpgurus_enqueue_styles' );
 add_filter( 'body_class', 'wpgurus_clear_body_class',0,1);
@@ -163,11 +162,9 @@ function polylang_language_menu($menu=array(), $args=array()){
               }else { /* all links are the same.*/
                 $struct = $post_type_obj->rewrite['slug'];
               }
-          		if ( $post_type_obj->rewrite['with_front'] )
-          			$struct = $wp_rewrite->front . $struct;
-          		else
-          			$struct = $wp_rewrite->root . $struct;
-          		 $link = home_url(  $struct );
+          		if ( $post_type_obj->rewrite['with_front'] ) $struct = $wp_rewrite->front . $struct;
+          		else $struct = $wp_rewrite->root . $struct;
+          		$link = home_url(  $struct );
           	} else {
           		$link = home_url( '?post_type=' . $_GET['archive'], $lang );
           	}

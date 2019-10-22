@@ -66,7 +66,7 @@ get_header();
   <?php
   /*load templates for vue components*/
   if(apply_filters('wpgurus_theme_multilingual', false) || defined ("POLYLANG_VERSION")){
-    include_vue_template('main', 'languages');
+    get_template_part( 'templates/index', 'languages' );
   }
 
   if ( has_nav_menu( 'network' ) ){
