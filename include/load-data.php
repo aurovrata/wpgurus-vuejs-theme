@@ -247,10 +247,7 @@ class Initial_LoadData {
       }
     }
 		/** @since 1.1.0 if current page is 404, stick it in the routes*/
-		$page404_settings = get_option( '404page_settings', array() );
-		$page404id = 0;
-		if(isset($page404_settings['page_id'])) $page404id = $page404_settings['page_id'];
-		$page404id = apply_filters('wpgurus_404_page_id', $page404id);
+		$page404id = $this->get_404_page();
 		$is404 = is_404();
 		if( !empty($GLOBALS['wp_query']->posts) && $page404id == $GLOBALS['wp_query']->posts[0]->ID ){
 			$is404 = true;
@@ -316,12 +313,9 @@ class Initial_LoadData {
     if($page_id>0) $home=array('type'=>'post_type', 'object'=>'page');
     else $home=array('type'=>'post_type_archive', 'object'=>'post');
 		/** @since 1.1.0 handle 404page plugin*/
-		// $page404id = get_option( '404page_page_id', 0 );
-		$page404_settings = get_option( '404page_settings', array() );
-		$page404id = 0;
-		if(isset($page404_settings['page_id'])) $page404id = $page404_settings['page_id'];
+		$page404 = $this->get_404_page();
 		$is404 = is_404();
-		if( !empty($GLOBALS['wp_query']->posts) && $page404id == $GLOBALS['wp_query']->posts[0]->ID ){
+		if( !empty($GLOBALS['wp_query']->posts) && $page404 == $GLOBALS['wp_query']->posts[0]->ID ){
 			$is404 = true;
 		}
 
@@ -340,7 +334,7 @@ class Initial_LoadData {
 																			'title'=>array('rendered'=>'<h1>Page Not Found (404)</h1>'),
 																			'content'=>array('rendered'=>'<p>This page does not exists</p>')
 																		)),
-			'page404'=>$page404id,
+			'page404'=>$page404,
 		) ;
 		/*const InitialPage*/
     return wp_json_encode($data);
@@ -394,5 +388,28 @@ class Initial_LoadData {
 		$lang = $lang[0];
 		if(function_exists('pll_current_language')) $lang = pll_current_language();
 		return $lang;
+	}
+	/**
+	* Function to retrieve the 404 page IDs.
+	*
+	*@since 2.2.3
+	*@param string $param text_description
+	*@return array array of $lang=>page_ID key value pair
+	*/
+	public function get_404_page(){
+		// $page404id = get_option( '404page_page_id', 0 );
+		$page404id = 0;
+		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+		if(is_plugin_active('404page/404page.php')){
+			$page404_settings = get_option( '404page_settings', array() );
+			if(isset($page404_settings['page_id'])){
+				if(function_exists('pll_get_post') && pll_default_language() != pll_current_language()){
+					$page404id = pll_get_post($page404_settings['page_id'], pll_current_language());
+				}else{
+					$page404id = $page404_settings['page_id'];
+				}
+			}
+		}else $page404id = apply_filters('wpgurus_404_page_id', 0, $this->get_lang());
+		return $page404id;
 	}
 }
