@@ -398,6 +398,7 @@ class Initial_LoadData {
 	*/
 	public function get_404_page(){
 		// $page404id = get_option( '404page_page_id', 0 );
+    if(function_exists('pp_404_get_page_id')) return pp_404_get_page_id();
 		$page404id = 0;
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		if(is_plugin_active('404page/404page.php')){

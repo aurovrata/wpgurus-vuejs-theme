@@ -106,56 +106,72 @@ function polylang_post_menu($request){
   $params     = $request->get_params();
   return polylang_language_menu(array(), $params);
 }
+
 function polylang_language_menu($menu=array(), $args=array()){
-  $pll_args = array('raw'=>1);
-  $is_post = false;
+  $is_post = $home_link = false;
+
+  $post_id = null;
   $links = array();
-  $build_raw = false;
   $home = home_url();
 
-  if(isset($args['id'])){
-    /**
-    *@since 0.9.2
-    * allow for archive pages from taxonomy.
-    */
-    switch(true){
-      case isset($_GET['tax']):
-        $build_raw = true;
-        if(function_exists('pll_languages_list')){
-          $langs = pll_languages_list();
+  $translated_menu = array();
+  $current_lang = '';
+  if(isset($args['lang'])){
+    $current_lang = $args['lang'];
+  }
+  if(function_exists('pll_languages_list')){
+    $names = pll_languages_list(array('hide_empty'=>1,'fields'=>'name'));
+    $langs = pll_languages_list(array('hide_empty'=>1));
+    foreach($langs as $idx=>$lang){
+      $translated_menu[$lang]=array(
+        'slug'=>$lang,
+        'name'=>$names[$idx],
+        'url'=>'',
+        'current_lang'=>($current_lang==$lang),
+      );
+    }
+      // if( isset($links[$lang]) ) $menu[$lang]['url'] = $links[$lang];
+  }
+  switch(true){
+    case isset($args['id']):
+      /**
+      *@since 0.9.2
+      * allow for archive pages from taxonomy.
+      */
+      switch(true){
+        case isset($_GET['tax']):
           $link = get_term_link( $args['id'], $_GET['tax']);
-          foreach($langs as $lang){
+          foreach($translated_menu as $lang=>&$lmenu){
             if(function_exists('pll_is_translated_taxonomy') && pll_is_translated_taxonomy( $_GET['tax'] ) ){
               $term_id = pll_get_term( $args['id'], $lang );
-              $links[$lang] = get_term_link($term_id, $_GET['tax']);
+              $lmenu['url'] = get_term_link($term_id, $_GET['tax']);
               // debug_msg($links[$lang], $lang.':');
             }else { /* all links are the same.*/
-              $links[$lang] = str_replace($home, pll_home_url( $lang ), $link);
+              $lmenu['url'] = str_replace($home, pll_home_url( $lang ), $link);
             }
           }
-        }
-        break;
-      default:/* assume this is a post/page */
-        $pll_args['post_id']=$args['id'];
-        break;
-    }
-  }else if(isset($args['slug'])){
-    /** Fix for translation menu.
-    * @since v0.6
-    */
-    $post_type = 'any';
-    switch(true){
-      case isset($_GET['ptype']):
-        $post_type = $_GET['ptype'];
-        $is_post = true;
-        break;
-      case isset($_GET['archive']) && 'post' != $_GET['archive']: /*post archives lkely pages*/
-        $build_raw = true;
-        $post_type_obj = get_post_type_object( $_GET['archive'] );
-        if(function_exists('pll_languages_list')){
-          $langs = pll_languages_list();
+          break;
+        default:/* assume this is a post/page */
+          $post_id=$args['id'];
+          break;
+      }
+      break;
+    case isset($args['slug']):
+      /** Fix for translation menu.
+      * @since v0.6
+      */
+      $post_type = 'any';
+      switch(true){
+        case isset($_GET['ptype']):
+          $post_type = $_GET['ptype'];
+          $is_post = true;
+          break;
+        case isset($_GET['archive']) && 'post' != $_GET['archive']: /*post archives lkely pages*/
+          $build_raw = true;
+          $post_type_obj = get_post_type_object( $_GET['archive'] );
+
           global $wp_rewrite;
-          foreach($langs as $lang){
+          foreach($translated_menu as $lang=>&$lmenu){
             if ( get_option( 'permalink_structure' ) && is_array( $post_type_obj->rewrite ) ) {
               if(function_exists('pll_is_translated_post_type') && pll_is_translated_post_type( $_GET['archive'] )){
         		    $struct = apply_filters( 'wpgurus_theme_polylang_translate_archive_slug-'. $_GET['archive'], $post_type_obj->rewrite['slug'], $lang) ;
@@ -168,49 +184,53 @@ function polylang_language_menu($menu=array(), $args=array()){
           	} else {
           		$link = home_url( '?post_type=' . $_GET['archive'], $lang );
           	}
-            $links[$lang] = user_trailingslashit(str_replace($home.'/', pll_home_url($lang), $link));
+            $lmenu['url'] = user_trailingslashit(str_replace($home.'/', pll_home_url($lang), $link));
           }
-        }
-        break;
-      default: /*assume its a post/page*/
-        $is_post = true;
-        break;
-    }
-    if($is_post){
-      $post_args = array(
-        'name'           => $args['slug'],
-        'post_type'      => $post_type,
-        'post_status'    => 'publish',
-        'posts_per_page' => 1
-      );
-      $my_posts = get_posts( $post_args );
-      if( $my_posts ) {
-        $pll_args['post_id']=$my_posts[0]->ID;
-      }else $pll_args['force_home']=1;
-    }
+          break;
+        default: /*assume its a post/page*/
+          $is_post = true;
+          break;
+      }
+
+      if($is_post){ //get the id of the post.
+        $post_args = array(
+          'name'           => $args['slug'],
+          'post_type'      => $post_type,
+          'post_status'    => 'publish',
+          'posts_per_page' => 1,
+        );
+        $my_posts = get_posts( $post_args );
+        if( $my_posts ) {
+          $post_id = $my_posts[0]->ID;
+          debug_msg($post_id, 'post ');
+        }else $home_link = true;
+      }
+      break;
+    default: //home link.
+      $home_link = true;
+      break;
   }
-  if(function_exists('pll_the_languages')){
-    $menu = pll_the_languages($pll_args);
-  }
-  if($build_raw && function_exists('pll_languages_list')){
-    $langs = pll_languages_list();
-    foreach($langs as $lang){
-      if( isset($links[$lang]) ) $menu[$lang]['url'] = $links[$lang];
+
+  if(isset($post_id) && function_exists('pll_get_post_translations')){
+    $tposts = pll_get_post_translations($post_id);
+    foreach($translated_menu as $lang=>&$lmenu){
+      if(isset($tposts[$lang])){
+        $lmenu['url'] = get_permalink($tposts[$lang]);
+      }
     }
+
+    // debug_msg($pll_args, 'args ');
+    // debug_msg($menu, 'restult ');
+  }else if($home_link && function_exists('pll_home_url')){
+    foreach($translated_menu as $lang=>&$lmenu) $lmenu['url'] = pll_home_url($lang);
   }
-  return $menu;
+  return apply_filters('wpgurus_theme_polylang_menu', $translated_menu, $current_lang);
 }
 /**
 * Register polylang route
 */
 function register_polylang_route(){
-  register_rest_route( 'wpgurus/v2', '/polylang', array(
-      array(
-          'methods'  => WP_REST_Server::READABLE,
-          'callback' => 'polylang_language_menu' ,
-      )
-  ));
-  register_rest_route( 'wpgurus/v2', '/polylang/(?P<id>\d+)', array(
+  register_rest_route( 'wpgurus/v2', '/polylang/(?P<lang>[a-z]{2})', array(
       array(
           'methods'  => WP_REST_Server::READABLE,
           'callback' => 'polylang_post_menu' ,
@@ -221,7 +241,18 @@ function register_polylang_route(){
           ),
       )
   ));
-  register_rest_route( 'wpgurus/v2', '/polylang/(?P<slug>[a-zA-Z0-9_-]+)', array(
+  register_rest_route( 'wpgurus/v2', '/polylang/(?P<lang>[a-z]{2})/(?P<id>\d+)', array(
+      array(
+          'methods'  => WP_REST_Server::READABLE,
+          'callback' => 'polylang_post_menu' ,
+          'args'     => array(
+              'context' => array(
+              'default' => 'view',
+              ),
+          ),
+      )
+  ));
+  register_rest_route( 'wpgurus/v2', '/polylang/(?P<lang>[a-z]{2})/(?P<slug>[a-zA-Z0-9_-]+)', array(
       array(
           'methods'  => WP_REST_Server::READABLE,
           'callback' => 'polylang_post_menu' ,
@@ -244,7 +275,7 @@ function set_current_language($lang){
   return $lang;
 }
 function set_polylang_rest_path($path){
-  return rest_url('/wpgurus/v2/polylang/');
+  return rest_url('/wpgurus/v2/polylang/'.set_current_language('').'/');
 }
 
 /**
@@ -265,9 +296,9 @@ function add_language_menu_to_api($request) {
 function remove_archive_language_menus($results){
   if(is_array($results) && count($results)>1){
     foreach($results as &$post){
-      if(isset($post['language_menu'])){
+      if(is_array($post) && isset($post['language_menu'])){
         unset($post['language_menu']);
-        debug_msg($results, 'language_menu results ');
+        // debug_msg($results, 'language_menu results ');
 
       }
     }
